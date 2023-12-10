@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rectangle_image_top_radius">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_map_guide"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_map"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginBottom="5dp"
+                android:src="@drawable/ic_location"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/tv_diary_detail"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_diary_detail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/bmdohyun_ttf"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="지도 탭 가이드"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/iv_map"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <TextView
+            android:id="@+id/tv_map_guide"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:fontFamily="@font/airbnbcereal_w_lt"
+            android:lineSpacingMultiplier="1.2"
+            android:text="지도 탭은 앱 내 사진 촬영 기능을 사용하였을 때 위치가 저장된 목록만 보여주는 화면입니다. 지도 탭을 이용하기 위해서 위치 권한을 허용 후 사진 촬영 기능을 이용해 주시기 바랍니다."
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_map_guide" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/cb_never_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/airbnbcereal_w_lt"
+            android:text="다시 보지 않기"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_map_guide" />
+
+        <TextView
+            android:id="@+id/tv_OK"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/rectangle_join_view"
+            android:fontFamily="@font/bmdohyun_ttf"
+            android:gravity="center"
+            android:paddingVertical="15dp"
+            android:text="확인"
+            android:textColor="@color/primary"
+            android:textSize="18dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cb_never_show" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

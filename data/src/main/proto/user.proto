@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_package = "com.dohyun.petmemory";
+
+message UserInfoData {
+  string userId = 1;
+  string userNickname = 2;
+  string userImageUrl = 3;
+  string petName = 4;
+  int32 petBigType = 5;
+  string petType = 6;
+  int32 petAge = 7;
+  string petBirthDay = 8;
+  string petSince = 9;
+  int32 petSex = 10;
+  double petWeight = 12;
+  string petImageUrl = 13;
+}

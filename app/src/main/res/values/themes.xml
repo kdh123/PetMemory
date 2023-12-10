@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.PetMemory" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="background">@android:color/black</item>
+        <item name="backgroundColor">@color/brown</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="colorPrimary">@color/brown</item>
+        <item name="colorPrimaryVariant">@color/brown</item>
+        <item name="colorOnPrimary">@color/primary</item>
+    </style>
+
+    <style name="circleImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="dialog_fullscreen" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimAmount">0</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="background">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="MenuDialog" parent="Theme.AppCompat.Light.Dialog">
+        <!--This attribute removes the shadow-->
+        <item name="android:background">@android:color/transparent</item>
+        <!--This attribute updates the background color of the window-->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!--Optional: This attribute makes the dialog window non-floating-->
+
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+</resources>

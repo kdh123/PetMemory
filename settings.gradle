@@ -1,0 +1,24 @@
+pluginManagement {
+    repositories {
+        google()
+        maven {
+            url 'https://naver.jfrog.io/artifactory/maven/'
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        maven {
+            url 'https://naver.jfrog.io/artifactory/maven/'
+        }
+        mavenCentral()
+    }
+}
+rootProject.name = "PetMemory"
+include ':app'
+include ':domain'
+include ':data'
