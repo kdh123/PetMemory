@@ -186,7 +186,7 @@ class DiaryWriteActivity : StateActivity<ActivityDiaryWriteBinding, DiaryState>(
         diaryData = intent?.getSerializableExtra(KEY_DIARY_DATA) as? DiaryData
 
         viewModel.run {
-            initState(diaryData = diaryData)
+            writing(diaryData = diaryData)
             initProfileState()
         }
     }

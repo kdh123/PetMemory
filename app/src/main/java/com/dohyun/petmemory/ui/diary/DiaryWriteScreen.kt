@@ -54,7 +54,6 @@ fun DiaryWriteScreen(
     onComplete: (DiaryData) -> Unit
 ) {
     val diaryWriteUiState = viewModel.diaryWriteUiState.collectAsStateWithLifecycle()
-    val profileUiState = viewModel.profileUiState.collectAsStateWithLifecycle()
     val title = remember {
         val state = diaryWriteUiState.value
         val str = if (state is DiaryWriteUiState.Writing) {
@@ -79,7 +78,15 @@ fun DiaryWriteScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        viewModel.addImageList(imageUrl = uri.toString())
+        val state = diaryWriteUiState.value
+
+        if (state is DiaryWriteUiState.Writing) {
+            val images = state.diaryData.imageUrl
+            val path = viewModel.getPath(uri = uri ?: return@rememberLauncherForActivityResult)
+            val data = state.diaryData.copy(imageUrl = listOf(path) + images)
+
+            viewModel.writing(diaryData = data)
+        }
     }
 
     val state = diaryWriteUiState.value
@@ -127,10 +134,10 @@ fun DiaryWriteScreen(
             fontSize = 14.sp,
             modifier = Modifier.padding(10.dp)
         )
-        PetImageList(launcher = launcher, uiState = diaryWriteUiState.value)
+        PetImages(launcher = launcher, uiState = diaryWriteUiState.value)
         Spacer(modifier = Modifier.height(10.dp))
 
-        ProfileList(uiState = profileUiState.value) { position ->
+        Profiles(uiState = diaryWriteUiState.value) { position ->
             viewModel.selectProfile(position)
         }
     }
@@ -178,7 +185,7 @@ fun AppBar(onBackClick: () -> Unit, onSaveClick: () -> Unit) {
 
 
 @Composable
-fun PetImageList(launcher: ManagedActivityResultLauncher<String, Uri?>, uiState: DiaryWriteUiState) {
+fun PetImages(launcher: ManagedActivityResultLauncher<String, Uri?>, uiState: DiaryWriteUiState) {
     when (uiState) {
         is DiaryWriteUiState.Writing -> {
             LazyRow(modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)) {
@@ -251,9 +258,12 @@ fun ProfileImage(path: Any, modifier: Modifier = Modifier, onCLick: () -> Unit) 
 }
 
 @Composable
-fun ProfileList(uiState: ProfileUiState, onClick: (Int) -> Unit) {
+fun Profiles(uiState: DiaryWriteUiState, onClick: (Int) -> Unit) {
     when (uiState) {
-        is ProfileUiState.Selected -> {
+        is DiaryWriteUiState.Writing -> {
+            if (uiState.profiles == null) {
+                return
+            }
             LazyRow(modifier = Modifier.padding(10.dp)) {
                 itemsIndexed(uiState.profiles) { index, profile ->
                     if (profile.isSelected) {

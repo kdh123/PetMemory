@@ -15,6 +15,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,20 +37,43 @@ class DiaryWriteViewModel @Inject constructor(
     )
     val diaryWriteUiState = _diaryWriteUiState.asStateFlow()
 
-    private val _profileUiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(ProfileUiState.Loading)
-    val profileUiState = _profileUiState.asStateFlow()
+    private val diaryState: MutableStateFlow<DiaryData?> = MutableStateFlow(null)
+    private val profileState: MutableStateFlow<List<SelectedProfile>> = MutableStateFlow(emptyList())
 
-    fun initState(diaryData: DiaryData? = null) {
-        _diaryWriteUiState.value = diaryData?.let {
-            DiaryWriteUiState.Writing(diaryData = it.copy(imageUrl = it.imageUrl + ""))
-        } ?: kotlin.run {
-            val diaryData = DiaryData(
-                id = "${System.currentTimeMillis()}",
-                date = DateUtil.todayDate(),
-                imageUrl = listOf("")
-            )
-            DiaryWriteUiState.Writing(diaryData = diaryData)
-        }
+    init {
+        viewModelScope.handle(block = {
+            _diaryWriteUiState.combine(diaryState) { uiState, data ->
+                if (data == null) {
+                    return@combine DiaryWriteUiState.None
+                }
+
+                when (uiState) {
+                    is DiaryWriteUiState.Loading -> {
+                        DiaryWriteUiState.Writing(diaryData = data)
+                    }
+                    is DiaryWriteUiState.Writing -> {
+                        uiState.copy(diaryData = data)
+                    }
+                    else -> {
+                        DiaryWriteUiState.None
+                    }
+                }
+            }.combine(profileState) { uiState, profiles ->
+                if (uiState is DiaryWriteUiState.Writing) {
+                    if (profiles.isNotEmpty()) {
+                        uiState.copy(profiles = profiles)
+                    } else {
+                        uiState
+                    }
+                } else {
+                    uiState
+                }
+            }.catch {
+                _diaryWriteUiState.value = DiaryWriteUiState.Fail("")
+            }.collect {
+                _diaryWriteUiState.value = it
+            }
+        })
     }
 
     fun initProfileState() {
@@ -62,31 +87,11 @@ class DiaryWriteViewModel @Inject constructor(
                 }
             }
 
-            _profileUiState.value = ProfileUiState.Selected(profiles = initProfiles)
+            profileState.value = initProfiles
         })
     }
 
     fun selectProfile(position: Int) {
-        val state = _profileUiState.value.let { uiState ->
-            if (uiState !is ProfileUiState.Selected) {
-                return
-            } else {
-                uiState
-            }
-        }
-
-        val petList = state.profiles.mapIndexed { index, selectedProfile ->
-            if (index == position) {
-                selectedProfile.copy(isSelected = true)
-            } else {
-                selectedProfile.copy(isSelected = false)
-            }
-        }
-
-        _profileUiState.value = state.copy(profiles = petList)
-    }
-
-    fun addImageList(imageUrl: String) {
         val state = _diaryWriteUiState.value.let { uiState ->
             if (uiState !is DiaryWriteUiState.Writing) {
                 return
@@ -94,10 +99,32 @@ class DiaryWriteViewModel @Inject constructor(
                 uiState
             }
         }
-        val path = mediaUtil.convertUriToPath(Uri.parse(imageUrl)) ?: return
-        val imageList = listOf(path) + state.diaryData.imageUrl
 
-        _diaryWriteUiState.value = state.copy(diaryData = state.diaryData.copy(imageUrl = imageList))
+        val profiles = state.profiles?.mapIndexed { index, selectedProfile ->
+            if (index == position) {
+                selectedProfile.copy(isSelected = true)
+            } else {
+                selectedProfile.copy(isSelected = false)
+            }
+        } ?: return
+
+        profileState.value = profiles
+    }
+
+    fun writing(diaryData: DiaryData?) {
+        val data = diaryData ?: kotlin.run {
+            DiaryData(
+                id = "${System.currentTimeMillis()}",
+                date = DateUtil.todayDate(),
+                imageUrl = listOf("")
+            )
+        }
+
+        diaryState.value = data
+    }
+
+    fun getPath(uri: Uri): String  {
+        return mediaUtil.convertUriToPath(uri) ?: ""
     }
 
     fun saveDiary(title: String, content: String, isEdit: Boolean) {
@@ -111,10 +138,11 @@ class DiaryWriteViewModel @Inject constructor(
                         uiState
                     }
                 }
-                val selectedProfile = (_profileUiState.value as? ProfileUiState.Selected)
-                    ?.profiles
+                val selectedProfile = state
+                    .profiles
                     ?.filter { it.isSelected }
-                    ?.get(0)?.petDto
+                    ?.get(0)
+                    ?.petDto
 
                 state = state.copy(
                     diaryData = state.diaryData.copy(
@@ -141,16 +169,9 @@ class DiaryWriteViewModel @Inject constructor(
 sealed interface DiaryWriteUiState {
     object None : DiaryWriteUiState
     object Loading : DiaryWriteUiState
-    data class Writing(val diaryData: DiaryData) : DiaryWriteUiState
+    data class Writing(val diaryData: DiaryData, val profiles: List<SelectedProfile>? = null) : DiaryWriteUiState
     data class Save(val diaryData: DiaryData) : DiaryWriteUiState
     data class Fail(val message: String?) : DiaryWriteUiState
-}
-
-sealed interface ProfileUiState {
-    object None : ProfileUiState
-    object Loading : ProfileUiState
-    data class Selected(val profiles: List<SelectedProfile>) : ProfileUiState
-    data class Fail(val message: String?) : ProfileUiState
 }
 
 data class SelectedProfile(
