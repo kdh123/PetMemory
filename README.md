@@ -16,6 +16,7 @@ Kotlin
 * Coroutine
 * Compose (일부)
 * Hilt (DI)
+* CameraX
 
 ## Architecture
 * MVVM
