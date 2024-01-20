@@ -68,8 +68,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/ll_content"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="match_parent">
 
                 <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/pager"

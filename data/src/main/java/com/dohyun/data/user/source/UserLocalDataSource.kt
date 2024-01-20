@@ -2,6 +2,8 @@ package com.dohyun.data.user.source
 
 import androidx.datastore.core.DataStore
 import com.dohyun.petmemory.User
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
@@ -173,5 +175,14 @@ class UserLocalDataSource(private val dataStore: DataStore<User.UserInfoData>) :
                 .setPetWeight(weight)
                 .build()
         }
+    }
+
+    private fun convertToList(value: String): List<String> {
+        return Gson().fromJson(value, Array<String>::class.java)?.toList() ?: emptyList()
+    }
+
+    private fun listToJson (data: List<String>): String {
+        val gson = GsonBuilder().create()
+        return gson.toJson(data)
     }
 }
