@@ -14,7 +14,7 @@ Kotlin
 * Room
 * Retrofit
 * Coroutine
-* Compose (일부)
+* Compose (일부, 마이그레이션 진행 중)
 * Hilt (DI)
 * CameraX
 
