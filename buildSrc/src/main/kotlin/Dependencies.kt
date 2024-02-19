@@ -8,7 +8,8 @@ object Dependencies {
     const val composeUI = "androidx.compose.ui:ui"
     const val composeUIGraphic = "androidx.compose.ui:ui-graphics"
     const val composePreview = "androidx.compose.ui:ui-tooling-preview"
-    const val composeMaterial = "androidx.compose.material3:material3"
+    const val composeMaterial = "androidx.compose.material:material:1.0.0"
+    const val composeMaterial3 = "androidx.compose.material3:material3:1.2.0-alpha08"
     const val composeUITest = "androidx.compose.ui:ui-test-junit4"
     const val composeUIToolingTest = "androidx.compose.ui:ui-tooling"
     const val composeUIManifestTest = "androidx.compose.ui:ui-test-manifest"
@@ -17,6 +18,9 @@ object Dependencies {
     const val composeNavigation = "androidx.navigation:navigation-compose:${Versions.composeNavigation}"
     const val composeGlide = "com.github.bumptech.glide:compose:${Versions.composeGlide}"
 
+    const val naverMap = "com.naver.maps:map-sdk:${Versions.naverMap}"
+    const val naverMapLocation = "io.github.fornewid:naver-map-location:${Versions.naverMapLocation}"
+    const val naverMapCompose = "io.github.fornewid:naver-map-compose:${Versions.naverMapCompose}"
 
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:"
     const val viewPager2 = "androidx.viewpager2:viewpager2:"
@@ -38,8 +42,6 @@ object Dependencies {
     const val cameraxView = "androidx.camera:camera-view:${Versions.camerax}"
 
     const val glide = "com.github.bumptech.glide:glide:${Versions.glide}"
-
-    const val naverMap = "com.naver.maps:map-sdk:${Versions.naverMap}"
 
     const val retrofit = "com.squareup.retrofit2:retrofit:${Versions.retrofit}"
     const val retrofitConvertor = "com.squareup.retrofit2:converter-gson:${Versions.retrofit}"
@@ -71,6 +73,7 @@ fun DependencyHandler.compose() {
     implementaion("${Dependencies.composeActivity}")
     implementaion(platform("${Dependencies.composeBom}"))
     implementaion("${Dependencies.composeMaterial}")
+    implementaion("${Dependencies.composeMaterial3}")
     implementaion("${Dependencies.composePreview}")
     implementaion("${Dependencies.composePreview}")
     implementaion("${Dependencies.composeUIGraphic}")
@@ -83,6 +86,12 @@ fun DependencyHandler.compose() {
     androidTestImplementation("${Dependencies.composeUITest}")
     debugImplementation("${Dependencies.composeUIToolingTest}")
     debugImplementation("${Dependencies.composeUIManifestTest}")
+}
+
+fun DependencyHandler.naverMap() {
+    implementaion("${Dependencies.naverMap}")
+    implementaion("${Dependencies.naverMapLocation}")
+    implementaion("${Dependencies.naverMapCompose}")
 }
 
 fun DependencyHandler.camerax() {

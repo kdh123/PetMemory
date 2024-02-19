@@ -19,6 +19,8 @@ object Versions {
     const val glide = "4.15.1"
     const val swipeRefreshLayout = "1.1.0"
     const val naverMap = "3.16.0"
+    const val naverMapLocation = "21.0.1"
+    const val naverMapCompose = "1.4.1"
 
     const val compileSdk = 33
     const val targetSdk = 33

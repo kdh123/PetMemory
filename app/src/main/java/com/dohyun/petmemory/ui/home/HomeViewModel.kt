@@ -11,10 +11,18 @@ import com.dohyun.domain.weather.WeatherRepository
 import com.dohyun.petmemory.base.StateViewModel
 import com.dohyun.petmemory.extension.handle
 import com.dohyun.petmemory.ui.diary.DiaryEvent
+import com.naver.maps.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,8 +46,86 @@ class HomeViewModel @Inject constructor(
     val currentLocationList
         get() = currentDiaryList.filter { it.lat != 0.0 && it.lng != 0.0 }
 
+    private val _sheetAlpha = MutableStateFlow(0f)
+    val sheetAlpha = _sheetAlpha.asStateFlow()
+
     private var currentStartIndex = 0
     private var currentOffset = 18
+
+    private val _homeUiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.Loading)
+    val homeUiState: StateFlow<HomeUiState> = _homeUiState.asStateFlow()
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            homeUiState.combine(getDiaries()) { state, diaries ->
+                when (state) {
+                    is HomeUiState.Loading -> {
+                        HomeUiState.Success(diaries, listOf(), diaries
+                                .filter { it.lat != 0.0 && it.lng != 0.0 }
+                            .map { LatLng(it.lat!!, it.lng!!) })
+                    }
+
+                    is HomeUiState.Success -> {
+                        state.copy(diaries = diaries, locations = diaries
+                            .filter { it.lat != 0.0 && it.lng != 0.0 }
+                            .map { LatLng(it.lat!!, it.lng!!) })
+                    }
+
+                    is HomeUiState.Fail -> {
+                        state
+                    }
+                }
+            }.catch {
+
+            }.collect {
+                _homeUiState.value = it
+            }
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            homeUiState.combine(getPets()) { state, pets ->
+                when (state) {
+                    is HomeUiState.Loading -> {
+                        HomeUiState.Success(listOf(), pets, listOf())
+                    }
+
+                    is HomeUiState.Success -> {
+                        state.copy(pets = pets)
+                    }
+
+                    is HomeUiState.Fail -> {
+                        state
+                    }
+                }
+            }.catch {
+
+            }.collect {
+                _homeUiState.value = it
+            }
+        }
+    }
+
+    fun setSheetOffset(offset: Float) {
+        _sheetAlpha.value = offset
+    }
+    private suspend fun getDiaries(isPaging: Boolean = false): StateFlow<List<DiaryData>> {
+        getDiaryUseCase(
+            currentDiaryListSize = currentDiaryList.size,
+            currentIndex = currentStartIndex,
+            offset = currentOffset,
+            isPaging = isPaging
+        )?.run {
+            currentStartIndex = indexAndOffset.index
+            currentOffset = indexAndOffset.offset
+            currentDiaryList = currentDiaryList + diaryList
+
+            val isLoadMore = currentDiaryList.size >= currentOffset
+        }
+
+        return flow {
+            emit(currentDiaryList)
+        }.stateIn(viewModelScope)
+    }
 
     fun getDiary(isPaging: Boolean = false) {
         _state.value = HomeState.Loading
@@ -64,6 +150,12 @@ class HomeViewModel @Inject constructor(
                     _state.value = HomeState.Load(diaryList = currentDiaryList, isLoadMore = false)
                 }
             })
+    }
+
+    private suspend fun getPets(): StateFlow<List<PetDto>> {
+        return flow {
+            emit(petRepository.getAllPet().reversed())
+        }.flowOn(Dispatchers.IO).stateIn(viewModelScope)
     }
 
     suspend fun getPetList(): List<PetDto> {
@@ -158,4 +250,14 @@ private fun getWeatherState(sky: String, pty: String): String {
             "날씨 정보 없음"
         }
     }
+}
+
+sealed interface HomeUiState {
+    object Loading : HomeUiState
+    data class Success(
+        val diaries: List<DiaryData>,
+        val pets: List<PetDto>,
+        val locations: List<LatLng>
+    ) : HomeUiState
+    data class Fail(val message: String?) : HomeUiState
 }

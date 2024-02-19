@@ -9,6 +9,8 @@ import com.dohyun.petmemory.base.BaseActivity
 import com.dohyun.petmemory.databinding.ActivityMainBinding
 import com.dohyun.petmemory.ui.diary.CameraActivity
 import com.dohyun.petmemory.ui.home.HomeFragment
+import com.dohyun.petmemory.ui.home.HomeFragment2
+import com.dohyun.petmemory.ui.home.HomeViewModel
 import com.dohyun.petmemory.ui.main.adapter.MainAdapter
 import com.dohyun.petmemory.ui.profile.ProfileFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,12 +19,13 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity(override val layoutId: Int = R.layout.activity_main) : BaseActivity<ActivityMainBinding>() {
 
     private val fragmentList = listOf(
-        HomeFragment.newInstance(),
+        HomeFragment2.newInstance(),
         ProfileFragment.newInstance()
     )
 
     private lateinit var mainAdapter: MainAdapter
     private val viewModel : MainViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
 
     companion object {
         const val KEY_IS_MOVE_TO_ALBUM = "key_is_move_to_album"

@@ -14,7 +14,7 @@ val properties = Properties().apply {
 
 android {
     namespace = "com.dohyun.petmemory"
-    compileSdk = 33
+    compileSdk = 34
 
     dataBinding {
         enable = true
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId = "com.dohyun.petmemory"
         minSdk = 23
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 14
         versionName = "1.0.2"
 
@@ -78,7 +78,7 @@ dependencies {
 
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
-    implementation("com.google.android.gms:play-services-location:19.0.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("junit:junit:4.12")
@@ -93,6 +93,8 @@ dependencies {
 
     compose()
 
+    naverMap()
+
     hilt()
 
     //Camera
@@ -103,9 +105,6 @@ dependencies {
 
     // Swipe Refresh Layout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
-    // 네이버 지도 SDK
-    implementation("com.naver.maps:map-sdk:3.16.0")
 
     implementation("com.google.android.material:material:1.9.0")
 

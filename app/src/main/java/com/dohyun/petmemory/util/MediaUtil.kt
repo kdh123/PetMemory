@@ -143,8 +143,11 @@ class MediaUtil @Inject constructor(@ApplicationContext private val context: Con
                 if (uri != null) {
                     // Now that the image is inserted, we can open an output stream and save the bitmap to it.
                     val outputStream = context.contentResolver.openOutputStream(uri)
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                    outputStream?.close()
+
+                    outputStream?.let {
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                        it.close()
+                    }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         // If using Android 10 or higher, mark the image as not pending anymore.
