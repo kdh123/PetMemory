@@ -30,7 +30,7 @@ fun DiaryDetailScreen(diaryId: String, viewModel: DiaryDetailViewModel = hiltVie
 @Composable
 fun DiaryPager(uiState: DiaryDetailUiState) {
     val images: List<String> = if (uiState is DiaryDetailUiState.Success) {
-        uiState.diary?.imageUrl ?: listOf()
+        uiState.diary?.imageUrl?.filter { it.isNotEmpty() } ?: listOf()
     } else {
         listOf()
     }
@@ -41,7 +41,6 @@ fun DiaryPager(uiState: DiaryDetailUiState) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         HorizontalPager(
-            //modifier = Modifier.padding(vertical = 32.dp),
             state = pagerState
         ) { page ->
             // page content

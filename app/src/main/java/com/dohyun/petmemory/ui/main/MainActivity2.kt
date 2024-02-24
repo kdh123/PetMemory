@@ -1,6 +1,7 @@
 package com.dohyun.petmemory.ui.main
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -18,14 +19,11 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -37,7 +35,6 @@ import com.dohyun.petmemory.R
 import com.dohyun.petmemory.ui.diary.DiaryDetailScreen
 import com.dohyun.petmemory.ui.home.HomeScreen
 import com.dohyun.petmemory.ui.home.HomeViewModel
-import com.dohyun.petmemory.ui.main.ui.theme.PetMemoryTheme
 import com.dohyun.petmemory.ui.profile.ProfileScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -59,7 +56,7 @@ fun MainScreen() {
     val items = listOf(Screen.Home, Screen.Profile)
 
     val isShow = navController.currentBackStackEntryAsState().value?.destination?.route in listOf("home", "profile")
-    val sheetAlpha by homeViewModel.sheetAlpha.collectAsStateWithLifecycle()
+    //val sheetAlpha by homeViewModel.sheetAlpha.collectAsStateWithLifecycle()
 
     androidx.compose.material.Scaffold(
         floatingActionButton = {
@@ -123,10 +120,19 @@ fun MainScreen() {
             }
         }
     ) {
-        NavHost(navController, startDestination = "home", Modifier.padding(it)) {
+        NavHost(navController = navController, startDestination = "home", Modifier.padding(it)) {
             composable("home") {
+                val onClick: (String) -> Unit = remember {
+                    { diaryId ->
+                        val des = navController.currentDestination?.id
+
+                        Log.e("dhkim", "des : $des")
+                        navController.navigate("diaryDetail/$diaryId")
+                    }
+                }
+
                 HomeScreen(
-                    onNavigateToDetail = { diaryId -> navController.navigate("diaryDetail/$diaryId") },
+                    onNavigateToDetail = onClick,
                     viewModel = homeViewModel
                 )
             }
@@ -140,26 +146,9 @@ fun MainScreen() {
     }
 }
 
-
 sealed class Screen(
     val title: String, val icon: Int, val screenRoute: String
 ) {
     object Home : Screen("홈", R.drawable.ic_home, "home")
     object Profile : Screen("프로필", R.drawable.ic_profile, "profile")
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PetMemoryTheme {
-        Greeting("Android")
-    }
 }

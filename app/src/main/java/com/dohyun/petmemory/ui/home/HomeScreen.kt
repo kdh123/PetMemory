@@ -3,9 +3,9 @@
 package com.dohyun.petmemory.ui.home
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
@@ -84,6 +85,18 @@ fun HomeScreen(
         position = CameraPosition(defaultLocation, 11.0)
     }
 
+    val diaries = if (homeUiState is HomeUiState.Success) {
+        (homeUiState as HomeUiState.Success).diaries
+    } else {
+        listOf()
+    }
+
+    val pets = if (homeUiState is HomeUiState.Success) {
+        (homeUiState as HomeUiState.Success).pets
+    } else {
+        listOf()
+    }
+
     Scaffold(
         topBar = {
             androidx.compose.material.TopAppBar(backgroundColor = colorResource(id = R.color.black)) {
@@ -108,20 +121,22 @@ fun HomeScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(top = innerPadding.calculateTopPadding())) {
-            TimeLine(state = homeUiState, cameraPositionState = cameraPositionState, onChangeSheetAlpha = viewModel::setSheetOffset, onNavigateToDetail = onNavigateToDetail)
-            PetProfile(state = homeUiState)
+            if (homeUiState is HomeUiState.Success) {
+                TimeLine(
+                    isExpand = (homeUiState as HomeUiState.Success).isBottomSheetExpand,
+                    diaries = diaries,
+                    cameraPositionState = cameraPositionState,
+                    onNavigateToDetail = onNavigateToDetail,
+                    onChangeExpand = viewModel::setIsBottomSheetExpand
+                )
+                PetProfile(pets = pets)
+            }
         }
     }
 }
 
 @Composable
-fun PetProfile(state: HomeUiState) {
-    val pets = if (state is HomeUiState.Success) {
-        state.pets
-    } else {
-        listOf()
-    }
-
+fun PetProfile(pets: List<PetDto>) {
     var xOffset by remember {
         mutableIntStateOf(0)
     }
@@ -179,35 +194,30 @@ fun Pet(pet: PetDto) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeLine(
-    state: HomeUiState,
+    isExpand: Boolean,
+    diaries: List<DiaryData>,
     cameraPositionState: CameraPositionState,
-    onChangeSheetAlpha: (Float) -> Unit,
-    onNavigateToDetail: (String) -> Unit) {
+    onNavigateToDetail: (String) -> Unit,
+    onChangeExpand: (Boolean) -> Unit
+) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
-    val diaries = if (state is HomeUiState.Success) {
-        scope.launch {
-            scaffoldState.bottomSheetState.apply {
-                expand()
-            }
-        }
-        state.diaries
-    } else {
-        listOf()
-    }
     var sheetHeight by remember {
         mutableStateOf(0.dp)
     }
     val localDensity = LocalDensity.current
 
-    Log.e("dhkim", "sss : $sheetHeight")
+    if (isExpand) {
+        scope.launch {
+            scaffoldState.bottomSheetState.expand()
+        }
+    }
 
     BottomSheetScaffold(
         modifier = Modifier.onGloballyPositioned {
             sheetHeight = with(localDensity) { it.size.height.toDp() - 56.dp }
 
             //onChangeSheetAlpha(it.size.height - scaffoldState.bottomSheetState.requireOffset())
-
             //Log.d("dhkim", "hihi : ${(it.size.height - scaffoldState.bottomSheetState.requireOffset()) / it.size.height}")
         },
         scaffoldState = scaffoldState,
@@ -225,7 +235,7 @@ fun TimeLine(
                     items(items = diaries, key = {
                         it.id
                     }) {
-                        Diary(data = it)
+                        Diary(data = it, onClick = onNavigateToDetail)
                     }
                 }
             }
@@ -233,16 +243,24 @@ fun TimeLine(
         sheetPeekHeight = 128.dp,
         sheetContainerColor = colorResource(id = R.color.white),
         sheetDragHandle = {
-            Log.e("dhkim", "height : $sheetHeight")
+            if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+                onChangeExpand(true)
+            } else {
+                onChangeExpand(false)
+            }
         }
     ) {
-        Map(state = state, cameraPositionState = cameraPositionState, onNavigateToDetail = onNavigateToDetail)
+        Map(
+            diaries = diaries.filter { it.lat != 0.0 && it.lng != 0.0 },
+            cameraPositionState = cameraPositionState,
+            onNavigateToDetail = onNavigateToDetail
+        )
     }
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Diary(data: DiaryData) {
+fun Diary(data: DiaryData, onClick: (String) -> Unit) {
     val localDensity = LocalDensity.current
 
     var lineHeight by remember {
@@ -253,6 +271,9 @@ fun Diary(data: DiaryData) {
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
+            .clickable {
+                onClick(data.id)
+            }
     ) {
 
         Row(modifier = Modifier.fillMaxSize()) {
@@ -317,13 +338,7 @@ fun Diary(data: DiaryData) {
 }
 
 @Composable
-fun Map(state: HomeUiState, cameraPositionState: CameraPositionState, onNavigateToDetail: (String) -> Unit) {
-    val diaries = if (state is HomeUiState.Success) {
-        state.diaries.filter { it.lat != 0.0 && it.lng != 0.0 }.ifEmpty { listOf() }
-    } else {
-        listOf()
-    }
-
+fun Map(diaries: List<DiaryData>, cameraPositionState: CameraPositionState, onNavigateToDetail: (String) -> Unit) {
     val currentLocation = if (diaries.isEmpty()) {
         LatLng(37.532600, 127.024612)
     } else {
@@ -342,14 +357,14 @@ fun Map(state: HomeUiState, cameraPositionState: CameraPositionState, onNavigate
     }
 
     cameraPositionState.move(
-        CameraUpdate.toCameraPosition(CameraPosition(currentLocation , 15.0))
+        CameraUpdate.toCameraPosition(CameraPosition(currentLocation, 15.0))
     )
 
     Box(Modifier.fillMaxSize()) {
         NaverMap(cameraPositionState = cameraPositionState, properties = mapProperties, uiSettings = mapUiSettings) {
             diaries.forEach { diary ->
                 Marker(
-                    state = MarkerState(position = LatLng(diary.lat ?: 37.532600, diary.lng ?:127.024612)),
+                    state = MarkerState(position = LatLng(diary.lat ?: 37.532600, diary.lng ?: 127.024612)),
                     icon = OverlayImage.fromResource(R.drawable.img_map_pin),
                     width = 42.dp,
                     height = 42.dp,

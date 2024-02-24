@@ -60,15 +60,28 @@ class HomeViewModel @Inject constructor(
             homeUiState.combine(getDiaries()) { state, diaries ->
                 when (state) {
                     is HomeUiState.Loading -> {
-                        HomeUiState.Success(diaries, listOf(), diaries
+                        HomeUiState.Success(
+                            diaries = diaries,
+                            pets = listOf(),
+                            locations = diaries
                                 .filter { it.lat != 0.0 && it.lng != 0.0 }
-                            .map { LatLng(it.lat!!, it.lng!!) })
+                                .map { LatLng(it.lat!!, it.lng!!) },
+                            isBottomSheetExpand = true
+                        )
                     }
 
                     is HomeUiState.Success -> {
-                        state.copy(diaries = diaries, locations = diaries
-                            .filter { it.lat != 0.0 && it.lng != 0.0 }
-                            .map { LatLng(it.lat!!, it.lng!!) })
+                        state.copy(
+                            diaries = diaries,
+                            locations = diaries
+                                .filter { it.lat != 0.0 && it.lng != 0.0 }
+                                .map { LatLng(it.lat!!, it.lng!!) },
+                            isBottomSheetExpand = if (state.diaries.isEmpty()) {
+                                true
+                            } else {
+                                state.isBottomSheetExpand
+                            }
+                        )
                     }
 
                     is HomeUiState.Fail -> {
@@ -86,7 +99,7 @@ class HomeViewModel @Inject constructor(
             homeUiState.combine(getPets()) { state, pets ->
                 when (state) {
                     is HomeUiState.Loading -> {
-                        HomeUiState.Success(listOf(), pets, listOf())
+                        HomeUiState.Success(listOf(), pets, listOf(), false)
                     }
 
                     is HomeUiState.Success -> {
@@ -108,6 +121,15 @@ class HomeViewModel @Inject constructor(
     fun setSheetOffset(offset: Float) {
         _sheetAlpha.value = offset
     }
+
+    fun setIsBottomSheetExpand(isBottomSheetExpand: Boolean) {
+        val state = _homeUiState.value
+
+        if (state is HomeUiState.Success) {
+            _homeUiState.value = state.copy(isBottomSheetExpand = isBottomSheetExpand)
+        }
+    }
+
     private suspend fun getDiaries(isPaging: Boolean = false): StateFlow<List<DiaryData>> {
         getDiaryUseCase(
             currentDiaryListSize = currentDiaryList.size,
@@ -257,7 +279,8 @@ sealed interface HomeUiState {
     data class Success(
         val diaries: List<DiaryData>,
         val pets: List<PetDto>,
-        val locations: List<LatLng>
+        val locations: List<LatLng>,
+        val isBottomSheetExpand: Boolean
     ) : HomeUiState
     data class Fail(val message: String?) : HomeUiState
 }
