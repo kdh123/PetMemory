@@ -66,7 +66,8 @@ class HomeViewModel @Inject constructor(
                             locations = diaries
                                 .filter { it.lat != 0.0 && it.lng != 0.0 }
                                 .map { LatLng(it.lat!!, it.lng!!) },
-                            isBottomSheetExpand = true
+                            isBottomSheetExpand = true,
+                            isBottomSheetShow = true
                         )
                     }
 
@@ -99,7 +100,13 @@ class HomeViewModel @Inject constructor(
             homeUiState.combine(getPets()) { state, pets ->
                 when (state) {
                     is HomeUiState.Loading -> {
-                        HomeUiState.Success(listOf(), pets, listOf(), false)
+                        HomeUiState.Success(
+                            diaries = listOf(),
+                            pets = pets,
+                            locations = listOf(),
+                            isBottomSheetExpand = false,
+                            isBottomSheetShow = true
+                        )
                     }
 
                     is HomeUiState.Success -> {
@@ -118,8 +125,20 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun setSheetOffset(offset: Float) {
+    fun setSheetAlpha(offset: Float) {
         _sheetAlpha.value = offset
+
+        if (offset < 0.1) {
+            val state = _homeUiState.value
+            if (state is HomeUiState.Success) {
+                _homeUiState.value = state.copy(isBottomSheetShow = false)
+            }
+        } else {
+            val state = _homeUiState.value
+            if (state is HomeUiState.Success) {
+                _homeUiState.value = state.copy(isBottomSheetShow = true)
+            }
+        }
     }
 
     fun setIsBottomSheetExpand(isBottomSheetExpand: Boolean) {
@@ -280,7 +299,8 @@ sealed interface HomeUiState {
         val diaries: List<DiaryData>,
         val pets: List<PetDto>,
         val locations: List<LatLng>,
-        val isBottomSheetExpand: Boolean
+        val isBottomSheetExpand: Boolean,
+        val isBottomSheetShow: Boolean
     ) : HomeUiState
     data class Fail(val message: String?) : HomeUiState
 }

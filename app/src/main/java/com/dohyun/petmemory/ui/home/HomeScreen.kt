@@ -33,11 +33,11 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,7 +70,6 @@ import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
 import com.naver.maps.map.overlay.OverlayImage
-import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -127,7 +126,8 @@ fun HomeScreen(
                     diaries = diaries,
                     cameraPositionState = cameraPositionState,
                     onNavigateToDetail = onNavigateToDetail,
-                    onChangeExpand = viewModel::setIsBottomSheetExpand
+                    onChangeExpand = viewModel::setIsBottomSheetExpand,
+                    onChangeAlpha = viewModel::setSheetAlpha
                 )
                 PetProfile(pets = pets)
             }
@@ -198,27 +198,34 @@ fun TimeLine(
     diaries: List<DiaryData>,
     cameraPositionState: CameraPositionState,
     onNavigateToDetail: (String) -> Unit,
-    onChangeExpand: (Boolean) -> Unit
+    onChangeExpand: (Boolean) -> Unit,
+    onChangeAlpha: (Float) -> Unit
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
-    val scope = rememberCoroutineScope()
     var sheetHeight by remember {
         mutableStateOf(0.dp)
     }
     val localDensity = LocalDensity.current
+    val peekHeight = with(localDensity) { 56.dp.toPx() }
 
-    if (isExpand) {
-        scope.launch {
+    LaunchedEffect(isExpand) {
+        if (isExpand) {
             scaffoldState.bottomSheetState.expand()
         }
     }
 
     BottomSheetScaffold(
         modifier = Modifier.onGloballyPositioned {
-            sheetHeight = with(localDensity) { it.size.height.toDp() - 56.dp }
+            sheetHeight = with(localDensity) { (it.size.height.toDp() - 56.dp) }
+            val firstHeight = with(localDensity) { 56.dp.toPx() }
+            val wholeHeight = with(localDensity) { (it.size.height.toDp()).toPx() }
+            val offset = scaffoldState.bottomSheetState.requireOffset()
 
-            //onChangeSheetAlpha(it.size.height - scaffoldState.bottomSheetState.requireOffset())
-            //Log.d("dhkim", "hihi : ${(it.size.height - scaffoldState.bottomSheetState.requireOffset()) / it.size.height}")
+            var alpha = (wholeHeight - peekHeight + firstHeight - offset) / (wholeHeight - peekHeight)
+            if (alpha < 0.1f) {
+                alpha = 0.0f
+            }
+            onChangeAlpha(alpha)
         },
         scaffoldState = scaffoldState,
         sheetContent = {
@@ -240,13 +247,15 @@ fun TimeLine(
                 }
             }
         },
-        sheetPeekHeight = 128.dp,
+        sheetPeekHeight = 56.dp,
         sheetContainerColor = colorResource(id = R.color.white),
         sheetDragHandle = {
-            if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-                onChangeExpand(true)
-            } else {
-                onChangeExpand(false)
+            LaunchedEffect(scaffoldState.bottomSheetState.currentValue) {
+                if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+                    onChangeExpand(true)
+                } else {
+                    onChangeExpand(false)
+                }
             }
         }
     ) {
@@ -262,7 +271,6 @@ fun TimeLine(
 @Composable
 fun Diary(data: DiaryData, onClick: (String) -> Unit) {
     val localDensity = LocalDensity.current
-
     var lineHeight by remember {
         mutableStateOf(0.dp)
     }
@@ -277,22 +285,18 @@ fun Diary(data: DiaryData, onClick: (String) -> Unit) {
     ) {
 
         Row(modifier = Modifier.fillMaxSize()) {
-
             Spacer(modifier = Modifier.width(5.dp))
-
             GlideImage(
                 model = data.pet?.petImageUrl ?: R.drawable.ic_check_white,
                 contentDescription = "profile image",
                 modifier = Modifier
                     .clip(CircleShape)
                     .width(48.dp)
-                    .height(48.dp)
+                    .height(48.dp),
             ) { builder ->
                 builder.centerCrop()
             }
-
             Spacer(modifier = Modifier.width(5.dp))
-
             Text(text = data.date, modifier = Modifier.align(Alignment.CenterVertically))
         }
 
