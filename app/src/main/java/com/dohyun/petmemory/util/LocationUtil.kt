@@ -3,11 +3,11 @@ package com.dohyun.petmemory.util
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
-import dagger.hilt.android.qualifiers.ActivityContext
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 
-class LocationUtil @Inject constructor(@ActivityContext private val context: Context) {
+class LocationUtil @Inject constructor(@ApplicationContext private val context: Context) {
 
     fun getAddress(lat: Double, lng: Double): String {
         if (lat == 0.0 || lng == 0.0) {

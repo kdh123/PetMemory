@@ -1,13 +1,9 @@
 package com.dohyun.petmemory.ui.diary
 
 import androidx.lifecycle.viewModelScope
-import com.dohyun.domain.diary.DeleteDiaryUseCase
-import com.dohyun.domain.diary.DiaryData
 import com.dohyun.domain.diary.DiaryRepository
-import com.dohyun.domain.diary.SaveDiaryUseCase
-import com.dohyun.domain.diary.EditDiaryUseCase
 import com.dohyun.petmemory.base.StateViewModel
-import com.dohyun.petmemory.extension.handle
+import com.dohyun.petmemory.util.LocationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,15 +17,13 @@ import javax.inject.Inject
 @HiltViewModel
 class DiaryDetailViewModel @Inject constructor(
     private val diaryRepository: DiaryRepository,
-    private val saveDiaryUseCase: SaveDiaryUseCase,
-    private val editDiaryUseCase: EditDiaryUseCase,
-    private val deleteDiaryUseCase: DeleteDiaryUseCase
+    private val locationUtil: LocationUtil
 ) : StateViewModel<DiaryState>(DiaryState.None) {
 
     private val _uiState: MutableStateFlow<DiaryDetailUiState> = MutableStateFlow(DiaryDetailUiState.Loading)
     val uiState: StateFlow<DiaryDetailUiState> = _uiState.asStateFlow()
 
-    private val diaryState = MutableStateFlow<DiaryData?>(null)
+    private val diaryState = MutableStateFlow<DiaryDetail?>(null)
 
     init {
         viewModelScope.launch {
@@ -57,37 +51,27 @@ class DiaryDetailViewModel @Inject constructor(
 
     fun getDiary(diaryId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            diaryState.value = diaryRepository.getDiaryInfo(diaryId = diaryId)
-            val a =  "ss"
+            val diary = diaryRepository.getDiaryInfo(diaryId = diaryId)!!
+            val detail = diary.run {
+                DiaryDetail(
+                    id = diaryId,
+                    title = title,
+                    date = date,
+                    content = content,
+                    imageUrl = imageUrl,
+                    address = locationUtil.getAddress(lat ?: 0.0, lng ?: 0.0)
+                )
+            }
+            diaryState.value = detail
         }
-    }
-
-    fun deleteDiary(diaryData: DiaryData) {
-        _state.value = DiaryState.Loading
-
-        viewModelScope.handle(
-            dispatcher = Dispatchers.IO,
-            block = {
-                _state.value = DiaryState.Delete(diaryData = deleteDiaryUseCase(diaryData = diaryData))
-            })
-    }
-
-    fun editDiary(diaryData: DiaryData) {
-        viewModelScope.launch(Dispatchers.IO) {
-            editDiaryUseCase(diaryData = diaryData)
-
-            _state.value = DiaryState.Edit(diaryData = diaryData)
-        }
-    }
-
-    suspend fun saveDiary(diaryData: DiaryData, imageNeedSaveToGalleryList: Set<Int>) {
-        _state.value = DiaryState.Loading
-
-        val data = saveDiaryUseCase(
-            diaryData = diaryData,
-            imageNeedSaveToGalleryList = imageNeedSaveToGalleryList
-        )
-
-        _state.value = DiaryState.Save(diaryData = data)
     }
 }
+
+data class DiaryDetail(
+    val id: String,
+    val title: String = "",
+    val date: String,
+    val content: String? = "",
+    val imageUrl: List<String> = listOf(),
+    val address: String
+)
