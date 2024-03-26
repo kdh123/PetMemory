@@ -54,10 +54,4 @@ class DiaryViewModel @Inject constructor(
 
         _state.value = DiaryState.Save(diaryData = data)
     }
-
-    suspend fun getPetList(): List<PetDto> {
-        _petList = petRepository.getAllPet().reversed()
-
-        return _petList
-    }
 }

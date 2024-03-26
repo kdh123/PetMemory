@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 val properties = Properties().apply {
@@ -69,7 +70,8 @@ android {
 dependencies {
     domainModule()
     dataModule()
-    
+
+    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.core:core-ktx:1.8.0")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
@@ -88,6 +90,7 @@ dependencies {
 
     implementation("io.github.ParkSangGwon:tedpermission-normal:3.3.0")
 
+    implementation("androidx.activity:activity:1.8.2")
     implementation("androidx.activity:activity-ktx:1.7.2")
     implementation("androidx.fragment:fragment-ktx:1.6.0")
 

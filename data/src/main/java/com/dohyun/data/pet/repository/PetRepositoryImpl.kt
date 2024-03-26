@@ -3,11 +3,12 @@ package com.dohyun.data.pet.repository
 import com.dohyun.data.pet.source.PetLocalDataSource
 import com.dohyun.domain.pet.PetDto
 import com.dohyun.domain.pet.PetRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class PetRepositoryImpl @Inject constructor(private val petLocalDataSource: PetLocalDataSource) :
     PetRepository {
-    override suspend fun getAllPet(): List<PetDto> {
+    override suspend fun getAllPet(): Flow<List<PetDto>> {
         return petLocalDataSource.getAllPet()
     }
 

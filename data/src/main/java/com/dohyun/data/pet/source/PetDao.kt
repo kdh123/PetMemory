@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.dohyun.domain.pet.PetDto
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PetDao {
@@ -16,7 +17,7 @@ interface PetDao {
     fun deletePet(petId: Int)
 
     @Query("SELECT * FROM pet")
-    fun getAllPet(): List<PetEntity>?
+    fun getAllPet(): Flow<List<PetEntity>?>
 
     @Query("SELECT * FROM pet WHERE petId = :petId")
     fun getPetInfo(petId: Int): PetEntity?

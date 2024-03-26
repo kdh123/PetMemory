@@ -78,7 +78,7 @@ fun ProfilesPager(uiState: ProfileUiState) {
 }
 
 @Composable
-fun Menu(text: String, resId: Int/*, onClick: () -> Unit*/) {
+fun Menu(text: String, resId: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

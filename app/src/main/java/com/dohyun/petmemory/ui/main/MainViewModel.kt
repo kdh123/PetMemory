@@ -7,6 +7,7 @@ import com.dohyun.domain.pet.PetRepository
 import com.dohyun.domain.user.UserRepository
 import com.dohyun.petmemory.extension.handle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,7 +18,7 @@ class MainViewModel @Inject constructor(
 
     fun migrationPetProfile() {
         viewModelScope.handle(block = {
-            val petProfiles = petRepository.getAllPet()
+            val petProfiles = petRepository.getAllPet().first()
 
             if (petProfiles.isEmpty()) {
                 val petDto = userRepository.run {

@@ -19,9 +19,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -55,9 +52,11 @@ class HomeViewModel @Inject constructor(
     private val _homeUiState: MutableStateFlow<HomeUiState> = MutableStateFlow(HomeUiState.Loading)
     val homeUiState: StateFlow<HomeUiState> = _homeUiState.asStateFlow()
 
+    private val diaryState: MutableStateFlow<List<DiaryData>> = MutableStateFlow(listOf())
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            homeUiState.combine(getDiaries()) { state, diaries ->
+            homeUiState.combine(diaryState) { state, diaries ->
                 when (state) {
                     is HomeUiState.Loading -> {
                         HomeUiState.Success(
@@ -65,9 +64,7 @@ class HomeViewModel @Inject constructor(
                             pets = listOf(),
                             locations = diaries
                                 .filter { it.lat != 0.0 && it.lng != 0.0 }
-                                .map { LatLng(it.lat!!, it.lng!!) },
-                            isBottomSheetExpand = true,
-                            isBottomSheetShow = true
+                                .map { LatLng(it.lat!!, it.lng!!) }
                         )
                     }
 
@@ -76,12 +73,7 @@ class HomeViewModel @Inject constructor(
                             diaries = diaries,
                             locations = diaries
                                 .filter { it.lat != 0.0 && it.lng != 0.0 }
-                                .map { LatLng(it.lat!!, it.lng!!) },
-                            isBottomSheetExpand = if (state.diaries.isEmpty()) {
-                                true
-                            } else {
-                                state.isBottomSheetExpand
-                            }
+                                .map { LatLng(it.lat!!, it.lng!!) }
                         )
                     }
 
@@ -95,77 +87,6 @@ class HomeViewModel @Inject constructor(
                 _homeUiState.value = it
             }
         }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            homeUiState.combine(getPets()) { state, pets ->
-                when (state) {
-                    is HomeUiState.Loading -> {
-                        HomeUiState.Success(
-                            diaries = listOf(),
-                            pets = pets,
-                            locations = listOf(),
-                            isBottomSheetExpand = false,
-                            isBottomSheetShow = true
-                        )
-                    }
-
-                    is HomeUiState.Success -> {
-                        state.copy(pets = pets)
-                    }
-
-                    is HomeUiState.Fail -> {
-                        state
-                    }
-                }
-            }.catch {
-
-            }.collect {
-                _homeUiState.value = it
-            }
-        }
-    }
-
-    fun setSheetAlpha(offset: Float) {
-        _sheetAlpha.value = offset
-
-        if (offset < 0.1) {
-            val state = _homeUiState.value
-            if (state is HomeUiState.Success) {
-                _homeUiState.value = state.copy(isBottomSheetShow = false)
-            }
-        } else {
-            val state = _homeUiState.value
-            if (state is HomeUiState.Success) {
-                _homeUiState.value = state.copy(isBottomSheetShow = true)
-            }
-        }
-    }
-
-    fun setIsBottomSheetExpand(isBottomSheetExpand: Boolean) {
-        val state = _homeUiState.value
-
-        if (state is HomeUiState.Success) {
-            _homeUiState.value = state.copy(isBottomSheetExpand = isBottomSheetExpand)
-        }
-    }
-
-    private suspend fun getDiaries(isPaging: Boolean = false): StateFlow<List<DiaryData>> {
-        getDiaryUseCase(
-            currentDiaryListSize = currentDiaryList.size,
-            currentIndex = currentStartIndex,
-            offset = currentOffset,
-            isPaging = isPaging
-        )?.run {
-            currentStartIndex = indexAndOffset.index
-            currentOffset = indexAndOffset.offset
-            currentDiaryList = currentDiaryList + diaryList
-
-            val isLoadMore = currentDiaryList.size >= currentOffset
-        }
-
-        return flow {
-            emit(currentDiaryList)
-        }.stateIn(viewModelScope)
     }
 
     fun getDiary(isPaging: Boolean = false) {
@@ -193,15 +114,8 @@ class HomeViewModel @Inject constructor(
             })
     }
 
-    private suspend fun getPets(): StateFlow<List<PetDto>> {
-        return flow {
-            emit(petRepository.getAllPet().reversed())
-        }.flowOn(Dispatchers.IO).stateIn(viewModelScope)
-    }
 
     suspend fun getPetList(): List<PetDto> {
-        _petList = petRepository.getAllPet().reversed()
-
         return _petList
     }
 
@@ -291,16 +205,4 @@ private fun getWeatherState(sky: String, pty: String): String {
             "날씨 정보 없음"
         }
     }
-}
-
-sealed interface HomeUiState {
-    object Loading : HomeUiState
-    data class Success(
-        val diaries: List<DiaryData>,
-        val pets: List<PetDto>,
-        val locations: List<LatLng>,
-        val isBottomSheetExpand: Boolean,
-        val isBottomSheetShow: Boolean
-    ) : HomeUiState
-    data class Fail(val message: String?) : HomeUiState
 }

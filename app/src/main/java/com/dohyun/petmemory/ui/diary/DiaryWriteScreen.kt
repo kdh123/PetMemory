@@ -1,8 +1,10 @@
 package com.dohyun.petmemory.ui.diary
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,9 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,14 +29,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -44,70 +52,76 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.dohyun.domain.diary.DiaryData
 import com.dohyun.petmemory.R
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaryWriteScreen(
-    viewModel: DiaryWriteViewModel = hiltViewModel(),
-    isEdit: Boolean,
-    onBackClick: () -> Unit,
-    onComplete: (DiaryData) -> Unit
+    onFinish: (DiaryData?) -> Unit,
+    diaryWriteViewModel: DiaryWriteViewModel = hiltViewModel(),
+    diary: DiaryDetail? = null,
+    isEdit: Boolean
 ) {
-    val diaryWriteUiState = viewModel.diaryWriteUiState.collectAsStateWithLifecycle()
-    val title = remember {
-        val state = diaryWriteUiState.value
-        val str = if (state is DiaryWriteUiState.Writing) {
-            state.diaryData.title
-        } else {
-            ""
-        }
-
-        mutableStateOf(str)
+    val lazyRowState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val diaryWriteUiState by diaryWriteViewModel.diaryWriteUiState.collectAsStateWithLifecycle()
+    var title by remember {
+        mutableStateOf(diary?.title ?: "")
     }
-    val content = remember {
-        val state = diaryWriteUiState.value
-        val str = if (state is DiaryWriteUiState.Writing) {
-            state.diaryData.content ?: ""
-        } else {
-            ""
-        }
-
-        mutableStateOf(str)
+    var content by remember {
+        mutableStateOf(diary?.content ?: "")
     }
-
+    val imageUrls = if (diaryWriteUiState is DiaryWriteUiState.Writing) {
+        (diaryWriteUiState as DiaryWriteUiState.Writing).diaryData.imageUrl.filter { it.isNotEmpty() } + listOf("")
+    } else {
+        listOf("")
+    }
+    val context = LocalContext.current
+    var selectImageIndex = -1
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
-        val state = diaryWriteUiState.value
+        uri?.let {
+            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(it, flag)
 
-        if (state is DiaryWriteUiState.Writing) {
-            val images = state.diaryData.imageUrl
-            val path = viewModel.getPath(uri = uri ?: return@rememberLauncherForActivityResult)
-            val data = state.diaryData.copy(imageUrl = listOf(path) + images)
+            if (selectImageIndex >= 0) {
+                diaryWriteViewModel.editImage(index = selectImageIndex, uri = uri)
+            } else {
+                diaryWriteViewModel.addImage(uri = uri)
+            }
 
-            viewModel.writing(diaryData = data)
+            if (selectImageIndex < 0) {
+                scope.launch {
+                    delay(100L)
+                    lazyRowState.scrollToItem(imageUrls.size - 1)
+                }
+            }
         }
     }
 
-    val state = diaryWriteUiState.value
+    LaunchedEffect(true) {
+        diaryWriteViewModel.setDiary(diary = diary?.toDiary())
+    }
+
+    val state = diaryWriteUiState
 
     if (state is DiaryWriteUiState.Save) {
-        onComplete(state.diaryData)
-    }
+        onFinish(state.diaryData)
 
-    if (state !is DiaryWriteUiState.Writing) {
         return
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        AppBar(onBackClick = onBackClick) {
-            viewModel.saveDiary(title = title.value, content = content.value, isEdit = isEdit)
+        AppBar {
+            diaryWriteViewModel.saveDiary(title = title, content = content, isEdit = isEdit)
         }
 
         TextField(
-            value = title.value,
+            value = title,
             onValueChange = {
-                title.value = it
+                title = it
             },
             placeholder = {
                 Text("제목을 입력해주세요 (선택사항)", fontSize = 18.sp)
@@ -117,9 +131,9 @@ fun DiaryWriteScreen(
         )
 
         TextField(
-            value = content.value,
+            value = content,
             onValueChange = {
-                content.value = it
+                content = it
             },
             placeholder = {
                 Text("내용 입력해주세요 (선택사항)", fontSize = 18.sp)
@@ -130,21 +144,23 @@ fun DiaryWriteScreen(
             colors = TextFieldDefaults.textFieldColors(containerColor = colorResource(id = R.color.white))
         )
         Text(
-            text = "사진 등록 ${state.diaryData.imageUrl.filter { it.isNotEmpty() }.size} / 10",
+            text = "사진 등록 ${imageUrls.filter { it.isNotEmpty() }.size} / 10",
             fontSize = 14.sp,
             modifier = Modifier.padding(10.dp)
         )
-        PetImages(launcher = launcher, uiState = diaryWriteUiState.value)
+        PetImages(lazyRowState = lazyRowState, launcher = launcher, images = imageUrls) { index ->
+            selectImageIndex = index
+        }
         Spacer(modifier = Modifier.height(10.dp))
 
-        Profiles(uiState = diaryWriteUiState.value) { position ->
-            viewModel.selectProfile(position)
+        Profiles(uiState = diaryWriteUiState) { position ->
+            diaryWriteViewModel.selectProfile(position)
         }
     }
 }
 
 @Composable
-fun AppBar(onBackClick: () -> Unit, onSaveClick: () -> Unit) {
+fun AppBar(onSaveClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -162,10 +178,6 @@ fun AppBar(onBackClick: () -> Unit, onSaveClick: () -> Unit) {
         Image(
             painter = painterResource(id = R.drawable.ic_back),
             contentDescription = "back",
-            modifier = Modifier
-                .clickable {
-                    onBackClick()
-                }
         )
 
         Box(modifier = Modifier.weight(1f)) {
@@ -183,47 +195,55 @@ fun AppBar(onBackClick: () -> Unit, onSaveClick: () -> Unit) {
     }
 }
 
-
 @Composable
-fun PetImages(launcher: ManagedActivityResultLauncher<String, Uri?>, uiState: DiaryWriteUiState) {
-    when (uiState) {
-        is DiaryWriteUiState.Writing -> {
-            LazyRow(modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)) {
-                items(uiState.diaryData.imageUrl) {
-                    if (it.isEmpty()) {
-                        PetImage(
-                            path = R.drawable.ic_add_gray,
-                            modifier = Modifier.border(
-                                width = 1.dp,
-                                color = colorResource(id = R.color.light_gray),
-                                shape = RoundedCornerShape(10.dp)
-                            ),
-                            onCLick = {
-                                launcher.launch("image/*")
-                            }
-                        )
-                    } else {
-                        PetImage(
-                            path = it,
-                            onCLick = {
-                                launcher.launch("image/*")
-                            }
+fun PetImages(
+    lazyRowState: LazyListState,
+    launcher: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>,
+    images: List<String>,
+    onChangeImage: (Int) -> Unit
+) {
+    LazyRow(modifier = Modifier.padding(start = 10.dp, bottom = 10.dp), state = lazyRowState) {
+        itemsIndexed(images, key = { index, _ ->
+            index
+        }) { index, item ->
+            if (item.isEmpty()) {
+                PetImage(
+                    path = R.drawable.ic_add_gray,
+                    modifier = Modifier.border(
+                        width = 1.dp,
+                        color = colorResource(id = R.color.light_gray),
+                        shape = RoundedCornerShape(10.dp)
+                    ),
+                    onClick = {
+                        onChangeImage(-1)
+                        launcher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
                     }
-                    Spacer(modifier = Modifier.width(10.dp))
-                }
+                )
+            } else {
+                PetImage(
+                    path = item,
+                    onClick = {
+                        onChangeImage(index)
+                        launcher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    }
+                )
             }
-        }
-
-        else -> {
-
+            Spacer(modifier = Modifier.width(10.dp))
         }
     }
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun PetImage(path: Any, modifier: Modifier = Modifier, onCLick: () -> Unit) {
+fun PetImage(path: Any, modifier: Modifier = Modifier, onClick: () -> Unit) {
     GlideImage(
         model = path,
         contentDescription = "pet image",
@@ -232,7 +252,7 @@ fun PetImage(path: Any, modifier: Modifier = Modifier, onCLick: () -> Unit) {
             .width(140.dp)
             .height(140.dp)
             .clickable {
-                onCLick()
+                onClick()
             }
     ) { builder ->
         builder.centerCrop()

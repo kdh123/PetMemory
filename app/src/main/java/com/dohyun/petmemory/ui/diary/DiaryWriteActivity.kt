@@ -106,16 +106,16 @@ class DiaryWriteActivity : StateActivity<ActivityDiaryWriteBinding, DiaryState>(
 
     override fun initView() {
         isEdit = intent?.getBooleanExtra(KEY_IS_DIARY_EDIT, false) ?: false
+        diaryData = intent?.getSerializableExtra(KEY_DIARY_DATA) as? DiaryData
+
+        val diaryDetail = with(diaryData!!) {
+            DiaryDetail(
+                id, title, date, content, imageUrl, lat!!, lng!!, locationUtil.getAddress(lat!!, lng!!)
+            )
+        }
 
         setContent {
-            DiaryWriteScreen(isEdit = isEdit, onBackClick = ::onBackPressed) { diaryData ->
-                val intent = Intent(SyncDiaryData.KEY_SYNC_EVENT).apply {
-                    putExtra(SyncDiaryData.KEY_SYNC_EVENT, SyncDiaryData(diaryData = diaryData, event = DiaryEvent.Save))
-                }
-
-                sendBroadcast(intent)
-                finish()
-            }
+            DiaryWriteScreen(onFinish = { onBackPressed() }, isEdit = isEdit, diary = diaryDetail)
         }
     }
 

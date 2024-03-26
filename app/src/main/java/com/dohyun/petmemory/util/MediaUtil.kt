@@ -17,6 +17,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import okio.Path.Companion.toPath
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -26,16 +27,80 @@ class MediaUtil @Inject constructor(@ApplicationContext private val context: Con
 
     private val rootPath = Environment.getExternalStorageDirectory().toString()
 
+    fun getPathFromUri(uri: Uri): String? {
+        var path: String? = null
+        val scheme = uri.scheme
+        if (scheme == null || scheme == "file") {
+            // If the URI scheme is 'file', simply extract the path
+            path = uri.path
+        } else if (scheme == "content") {
+            // If the URI scheme is 'content', use ContentResolver to get the real path
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val columnIndex = cursor.getColumnIndex("_data")
+                    if (columnIndex != -1) {
+                        path = cursor.getString(columnIndex)
+                    }
+                }
+            }
+        }
+        return path
+    }
+
+
+    fun getPath(uri: Uri): String? {
+        var path: String? = null
+        // Check URI scheme
+        if ("content".equals(uri.scheme, ignoreCase = true)) {
+            // MediaStore (and general)
+            path = getDataColumn(context, uri, null, null)
+        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
+            // File
+            path = uri.path
+        }
+        return path
+    }
+
+    private fun getDataColumn(
+        context: Context,
+        uri: Uri,
+        selection: String?,
+        selectionArgs: Array<String>?
+    ): String? {
+        var cursor: Cursor? = null
+        val column = "_data"
+        val projection = arrayOf(column)
+        try {
+            cursor = context.contentResolver.query(
+                uri, projection, selection, selectionArgs,
+                null
+            )
+            if (cursor != null && cursor.moveToFirst()) {
+                val columnIndex: Int = cursor.getColumnIndexOrThrow(column)
+                return cursor.getString(columnIndex)
+            }
+        } catch (e: Exception) {
+        } finally {
+            cursor?.close()
+        }
+        return null
+    }
+
+
     //Uri -> Path(파일경로)
     @SuppressLint("Range")
     fun convertUriToPath(contentUri: Uri?): String? {
-        if (contentUri?.path?.startsWith("/document") == true) {
+        if (contentUri == null) {
+            return ""
+        }
+
+        if (contentUri.path?.startsWith("/document") == true) {
             return getDocumentPath(uri = contentUri)
         }
 
         var path: String? = null
         val proj = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = context.contentResolver.query(contentUri!!, proj, null, null, null)
+        val cursor = context.contentResolver.query(contentUri, proj, null, null, null)
         cursor?.moveToNext()
 
         val cursorIndex = cursor?.getColumnIndex(MediaStore.MediaColumns.DATA) ?: -1

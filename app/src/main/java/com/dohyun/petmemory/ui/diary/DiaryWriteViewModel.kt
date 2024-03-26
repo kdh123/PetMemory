@@ -1,6 +1,7 @@
 package com.dohyun.petmemory.ui.diary
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.dohyun.domain.diary.DiaryData
 import com.dohyun.domain.diary.SaveDiaryUseCase
@@ -27,14 +28,7 @@ class DiaryWriteViewModel @Inject constructor(
     private val mediaUtil: MediaUtil
 ) : StateViewModel<DiaryState>(DiaryState.None) {
 
-    private val _diaryWriteUiState: MutableStateFlow<DiaryWriteUiState> = MutableStateFlow(
-        DiaryWriteUiState.Writing(
-            diaryData = DiaryData(
-                id = "${System.currentTimeMillis()}",
-                date = DateUtil.todayDate()
-            )
-        )
-    )
+    private val _diaryWriteUiState: MutableStateFlow<DiaryWriteUiState> = MutableStateFlow(DiaryWriteUiState.Loading)
     val diaryWriteUiState = _diaryWriteUiState.asStateFlow()
 
     private val diaryState: MutableStateFlow<DiaryData?> = MutableStateFlow(null)
@@ -44,18 +38,20 @@ class DiaryWriteViewModel @Inject constructor(
         viewModelScope.handle(block = {
             _diaryWriteUiState.combine(diaryState) { uiState, data ->
                 if (data == null) {
-                    return@combine DiaryWriteUiState.None
+                    return@combine DiaryWriteUiState.Loading
                 }
 
                 when (uiState) {
                     is DiaryWriteUiState.Loading -> {
                         DiaryWriteUiState.Writing(diaryData = data)
                     }
+
                     is DiaryWriteUiState.Writing -> {
                         uiState.copy(diaryData = data)
                     }
+
                     else -> {
-                        DiaryWriteUiState.None
+                        uiState
                     }
                 }
             }.combine(profileState) { uiState, profiles ->
@@ -77,18 +73,6 @@ class DiaryWriteViewModel @Inject constructor(
     }
 
     fun initProfileState() {
-        viewModelScope.handle(Dispatchers.IO, block = {
-            val profiles = petRepository.getAllPet().reversed()
-            val initProfiles = profiles.mapIndexed { index, petDto ->
-                if (index == 0) {
-                    petDto.selected().copy(isSelected = true)
-                } else {
-                    petDto.selected()
-                }
-            }
-
-            profileState.value = initProfiles
-        })
     }
 
     fun selectProfile(position: Int) {
@@ -123,8 +107,39 @@ class DiaryWriteViewModel @Inject constructor(
         diaryState.value = data
     }
 
-    fun getPath(uri: Uri): String  {
-        return mediaUtil.convertUriToPath(uri) ?: ""
+    fun setDiary(diary: DiaryData?) {
+        val data = diary ?: kotlin.run {
+            DiaryData(
+                id = "${System.currentTimeMillis()}",
+                date = DateUtil.todayDate(),
+                imageUrl = listOf("")
+            )
+        }
+
+        diaryState.value = data
+    }
+
+    fun addImage(uri: Uri?) {
+        if (uri == null) {
+            return
+        }
+
+        val state = _diaryWriteUiState.value
+
+        if (state is DiaryWriteUiState.Writing) {
+            val images = state.diaryData.imageUrl.filter { it.isNotEmpty() } + listOf(uri.toString())
+            diaryState.value = state.diaryData.copy(imageUrl = images)
+        }
+    }
+
+    fun editImage(index: Int, uri: Uri?) {
+        val state = _diaryWriteUiState.value
+
+        if (state is DiaryWriteUiState.Writing) {
+            val images = state.diaryData.imageUrl.toMutableList()
+            images[index] = uri.toString()
+            diaryState.value = state.diaryData.copy(imageUrl = images)
+        }
     }
 
     fun saveDiary(title: String, content: String, isEdit: Boolean) {
@@ -161,7 +176,9 @@ class DiaryWriteViewModel @Inject constructor(
                     )
                 }
 
-                _diaryWriteUiState.value = DiaryWriteUiState.Save(state.diaryData)
+                _diaryWriteUiState.value = DiaryWriteUiState.Save(diaryState.value!!)
+            },
+            error = {
             })
     }
 }

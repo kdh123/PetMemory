@@ -3,6 +3,7 @@ package com.dohyun.data.diary.reopository
 import com.dohyun.data.diary.source.DiaryLocalDataSource
 import com.dohyun.domain.diary.DiaryData
 import com.dohyun.domain.diary.DiaryRepository
+import kotlinx.coroutines.flow.Flow
 
 class DiaryRepositoryImpl(private val localDataSource: DiaryLocalDataSource) : DiaryRepository {
 
@@ -14,7 +15,7 @@ class DiaryRepositoryImpl(private val localDataSource: DiaryLocalDataSource) : D
         return localDataSource.getLocationDiaryCount()
     }
 
-    override suspend fun getAllDiary(): List<DiaryData>? {
+    override suspend fun getAllDiary(): Flow<List<DiaryData>> {
         return localDataSource.getAllDiary()
     }
 

@@ -3,6 +3,8 @@ package com.dohyun.data.diary.source
 import com.dohyun.data.room.AppDatabase
 import com.dohyun.data.toDiaryEntity
 import com.dohyun.domain.diary.DiaryData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DiaryLocalDataSource @Inject constructor(private val db: AppDatabase) : DiaryDataSource {
@@ -17,9 +19,9 @@ class DiaryLocalDataSource @Inject constructor(private val db: AppDatabase) : Di
         return diaryService.getLocationDiaryCount()
     }
 
-    override suspend fun getAllDiary(): List<DiaryData>? {
-        return diaryService.getAllDiary()?.map {
-            it.toDto()
+    override suspend fun getAllDiary(): Flow<List<DiaryData>> {
+        return diaryService.getAllDiary().map { list ->
+            list?.map { it.toDto() }?.sortedByDescending { it.date } ?: listOf()
         }
     }
 
