@@ -37,7 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import com.dohyun.petmemory.R
 
 @Composable
@@ -106,7 +106,7 @@ fun Menu(text: String, resId: Int) {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Profile(profile: PetDto) {
+fun Profile(profile: Pet) {
     Box(
         modifier = Modifier
             .border(

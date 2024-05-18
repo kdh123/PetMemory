@@ -9,12 +9,12 @@ import android.view.View
 import android.widget.AdapterView
 import androidx.activity.viewModels
 import com.bumptech.glide.Glide
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import com.dohyun.petmemory.R
 import com.dohyun.petmemory.base.StateActivity
 import com.dohyun.petmemory.databinding.ActivityProfileBinding
 import com.dohyun.petmemory.extension.showToast
-import com.dohyun.petmemory.ui.main.MainActivity
+import com.dohyun.petmemory.ui.main.MainActivity2
 import com.dohyun.petmemory.ui.profile.ProfileDateBottomSheet.Companion.KEY_DATE_DATA
 import com.dohyun.petmemory.ui.profile.ProfileDateBottomSheet.Companion.KEY_DATE_TYPE
 import com.dohyun.petmemory.util.DateUtil
@@ -43,7 +43,7 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
     private val petTypeList = arrayListOf("강아지", "고양이", "기타")
     private val petSexList = arrayListOf("남", "여")
 
-    private var petDto : PetDto? = null
+    private var pet : Pet? = null
 
     private val permissionList = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
@@ -75,7 +75,7 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
         when (state) {
             is ProfileState.SuccessSave -> {
                 if (isProfileInit) {
-                    Intent(this, MainActivity::class.java).run {
+                    Intent(this, MainActivity2::class.java).run {
                         startActivity(this)
                     }
                     finish()
@@ -233,7 +233,7 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
                     }
                 }
 
-                var getPetDto = PetDto(
+                var getPet = Pet(
                     petBigType = petBigType,
                     petType = etPetSort.text.toString(),
                     petName = etPetName.text.toString(),
@@ -245,11 +245,11 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
                     petImageUrl = petImageUrl
                 )
 
-                if (petDto != null) {
-                    getPetDto = getPetDto.copy(petId = petDto!!.petId)
+                if (pet != null) {
+                    getPet = getPet.copy(petId = pet!!.petId)
                 }
 
-                stateViewModel.saveProfile(petDto = getPetDto, isUpdate = isProfileUpdate)
+                stateViewModel.saveProfile(pet = getPet, isUpdate = isProfileUpdate)
             }
         }
     }
@@ -295,8 +295,8 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
 
     override fun initData(intent: Intent?) {
         isProfileInit = intent?.getBooleanExtra(KEY_IS_PROFILE_INIT, false) ?: false
-        petDto = intent?.getSerializableExtra(KEY_PET_DATA) as? PetDto
-        isProfileUpdate = petDto != null
+        pet = intent?.getSerializableExtra(KEY_PET_DATA) as? Pet
+        isProfileUpdate = pet != null
 
         if (isProfileInit) {
             binding.run {
@@ -305,18 +305,18 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
             }
         }
 
-        petDto?.let {
+        pet?.let {
             petImageUrl = it.petImageUrl
             petBirthDay = DateUtil.getDateYearMonthDay(it.petBirthDay)
             petSinceDay = DateUtil.getDateYearMonthDay(it.petSinceDay)
 
-            setInfo(petDto = it)
+            setInfo(pet = it)
         }
     }
 
-    private fun setInfo(petDto: PetDto) {
+    private fun setInfo(pet: Pet) {
         with(binding) {
-            petDto.run {
+            pet.run {
                 etPetName.setText(petName)
                 etPetSort.setText(petType)
                 etPetName.setText(petName)

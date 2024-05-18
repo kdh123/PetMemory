@@ -1,6 +1,6 @@
 package com.dohyun.domain.diary
 
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import com.dohyun.domain.user.UserRepository
 import javax.inject.Inject
 
@@ -46,9 +46,9 @@ class GetDiaryUseCase @Inject constructor(
         }
     }
 
-    private suspend fun getPetDto(): PetDto {
+    private suspend fun getPetDto(): Pet {
         return userRepository.run {
-            PetDto(
+            Pet(
                 petBigType = getPetBigType(),
                 petType = getPetType(),
                 petName = getPetName(),

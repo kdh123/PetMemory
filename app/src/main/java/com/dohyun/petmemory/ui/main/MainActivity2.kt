@@ -19,14 +19,12 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -34,7 +32,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -44,8 +41,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import com.dohyun.domain.diary.DiaryData
 import com.dohyun.petmemory.R
+import com.dohyun.petmemory.map.MapScreen
 import com.dohyun.petmemory.ui.album.AlbumScreen
 import com.dohyun.petmemory.ui.diary.CameraActivity
 import com.dohyun.petmemory.ui.diary.DiaryDetailScreen
@@ -71,22 +68,15 @@ class MainActivity2 : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val homeViewModel: HomeViewModel2 = viewModel()
-    val items = listOf(Screen.Home, Screen.Camera, Screen.Profile)
-    val alpha by homeViewModel.sheetAlpha.collectAsStateWithLifecycle()
-    val isShow = navController.currentBackStackEntryAsState().value?.destination?.route in listOf("home", "profile")
+    val homeViewModel: HomeViewModel2 = hiltViewModel()
+    val items = listOf(Screen.Home, Screen.Map, Screen.Camera, Screen.Profile)
+    val isShow = navController.currentBackStackEntryAsState().value?.destination?.route in listOf("home", "map", "profile")
     var showBottomSheet by remember {
         mutableStateOf(true)
     }
     val context = LocalContext.current
     val onCameraClick = {
         context.startActivity(Intent(context, CameraActivity::class.java))
-    }
-
-    LaunchedEffect(true) {
-        homeViewModel.showBottomSheet.collect {
-            showBottomSheet = it
-        }
     }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
@@ -107,6 +97,17 @@ fun MainScreen() {
                     viewModel = homeViewModel,
                     onNavigateToDetail = onNavigateToDetail,
                     onNavigateToAlbum = onNavigateToAlbum,
+                )
+            }
+            composable("map") {
+                val onNavigateToDetail: (String) -> Unit = remember {
+                    { diaryId ->
+                        navController.navigate("diaryDetail/$diaryId")
+                    }
+                }
+
+                MapScreen(
+                    onNavigateToDetail = onNavigateToDetail
                 )
             }
             composable("album") {
@@ -131,16 +132,15 @@ fun MainScreen() {
                 ProfileScreen()
             }
             composable("diaryWrite") {
-                val onFinish: (DiaryData?) -> Unit = remember {
+                val onFinish = remember {
                     {
                         navController.popBackStack()
                     }
                 }
 
-                DiaryWriteScreen(
-                    onFinish = {
-                        onFinish(null)
-                }, isEdit = false)
+                DiaryWriteScreen(isEdit = false) {
+                    onFinish()
+                }
             }
             navigation(
                 startDestination = "diaryDetail/{diaryId}",
@@ -148,7 +148,7 @@ fun MainScreen() {
             ) {
                 composable("diaryDetail/{diaryId}") { backStackEntry ->
                     val viewModel = backStackEntry.sharedViewModel<DiaryDetailViewModel>(navController = navController)
-                    val onDelete : () -> Unit = remember {
+                    val onDelete: () -> Unit = remember {
                         {
                             navController.popBackStack()
                         }
@@ -178,48 +178,45 @@ fun MainScreen() {
                             }
                         },
                         isEdit = true,
-                        diary = diary
+                        diaryDetail = diary
                     )
                 }
             }
         }
 
-        if (showBottomSheet) {
-            AnimatedVisibility(
-                visible = isShow,
-                enter = fadeIn() + slideIn { IntOffset(0, it.height) },
-                exit = fadeOut() + slideOut { IntOffset(0, it.height) }
+        AnimatedVisibility(
+            visible = isShow,
+            enter = fadeIn() + slideIn { IntOffset(0, it.height) },
+            exit = fadeOut() + slideOut { IntOffset(0, it.height) }
+        ) {
+            BottomAppBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(align = Alignment.Bottom),
+                backgroundColor = colorResource(id = R.color.brown),
+                cutoutShape = RoundedCornerShape(50),
             ) {
-                BottomAppBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(align = Alignment.Bottom)
-                        .alpha(alpha),
-                    backgroundColor = colorResource(id = R.color.brown),
-                    cutoutShape = RoundedCornerShape(50),
-                ) {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    items.forEach { screen ->
-                        BottomNavigationItem(
-                            icon = { Icon(painterResource(id = screen.icon), contentDescription = null) },
-                            label = { Text(screen.screenRoute) },
-                            selected = currentDestination?.hierarchy?.any { it.route == screen.screenRoute } == true,
-                            onClick = {
-                                if (screen.screenRoute == "camera") {
-                                    onCameraClick()
-                                } else {
-                                    navController.navigate(screen.screenRoute) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                items.forEach { screen ->
+                    BottomNavigationItem(
+                        icon = { Icon(painterResource(id = screen.icon), contentDescription = null) },
+                        label = { Text(screen.screenRoute) },
+                        selected = currentDestination?.hierarchy?.any { it.route == screen.screenRoute } == true,
+                        onClick = {
+                            if (screen.screenRoute == "camera") {
+                                onCameraClick()
+                            } else {
+                                navController.navigate(screen.screenRoute) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
@@ -240,6 +237,7 @@ sealed class Screen(
     val title: String, val icon: Int, val screenRoute: String
 ) {
     object Home : Screen("홈", R.drawable.ic_home, "home")
+    object Map : Screen("지도", R.drawable.ic_map, "map")
     object Camera : Screen("카메라", R.drawable.ic_add, "camera")
     object Profile : Screen("프로필", R.drawable.ic_profile, "profile")
 }

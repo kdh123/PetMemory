@@ -8,7 +8,6 @@ import com.dohyun.petmemory.R
 import com.dohyun.petmemory.base.StateActivity
 import com.dohyun.petmemory.databinding.ActivitySplashBinding
 import com.dohyun.petmemory.ui.guide.GuideActivity
-import com.dohyun.petmemory.ui.main.MainActivity
 import com.dohyun.petmemory.ui.main.MainActivity2
 import dagger.hilt.android.AndroidEntryPoint
 

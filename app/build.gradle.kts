@@ -21,6 +21,10 @@ android {
         enable = true
     }
 
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
     defaultConfig {
         applicationId = "com.dohyun.petmemory"
         minSdk = 23
@@ -44,6 +48,16 @@ android {
             manifestPlaceholders["NAVER_MAP_API_KEY"] = properties["NAVER_MAP_API_KEY"] as String
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+        }
+        /*create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+        }*/
     }
 
     compileOptions {
@@ -110,6 +124,8 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     implementation("com.google.android.material:material:1.9.0")
+
+    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
 
     testCode()
 }

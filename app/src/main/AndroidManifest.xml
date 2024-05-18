@@ -30,14 +30,15 @@
         android:theme="@style/Theme.PetMemory"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <profileable
+            android:shell="true"
+            tools:targetApi="29" />
+
         <activity
             android:name=".ui.main.MainActivity2"
             android:exported="false"
             android:label="@string/title_activity_main2"
             android:theme="@style/Theme.PetMemory" />
-        <activity
-            android:name=".ui.album.AlbumActivity"
-            android:exported="false" />
         <activity
             android:name=".ui.guide.GuideActivity"
             android:exported="false" />
@@ -50,16 +51,10 @@
             android:value="${NAVER_MAP_API_KEY}" />
 
         <activity
-            android:name=".ui.diary.DiaryDetailActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.diary.DiaryWriteActivity"
             android:exported="false" />
         <activity
             android:name=".ui.diary.CameraActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.main.MainActivity"
             android:exported="false" />
         <activity
             android:name=".ui.splash.SplashActivity"
@@ -71,6 +66,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

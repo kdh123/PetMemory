@@ -7,7 +7,7 @@
 
         <variable
             name="data"
-            type="com.dohyun.domain.pet.PetDto" />
+            type="com.dohyun.domain.pet.Pet" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

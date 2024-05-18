@@ -62,7 +62,7 @@ class ProfileFragment(override val layoutId: Int = R.layout.fragment_profile) : 
     override fun onResume() {
         super.onResume()
 
-        stateViewModel.getProfile()
+        //stateViewModel.getProfile()
     }
 
     override fun render(state: ProfileState) {

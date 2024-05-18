@@ -7,21 +7,21 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import com.dohyun.petmemory.R
 import com.dohyun.petmemory.databinding.ItemProfileBinding
 
 class ProfileAdapter(
-    private val onItemClickListener: (PetDto) -> Unit
-) : ListAdapter<PetDto, ProfileAdapter.ViewHolder>(diffUtil) {
+    private val onItemClickListener: (Pet) -> Unit
+) : ListAdapter<Pet, ProfileAdapter.ViewHolder>(diffUtil) {
 
     companion object {
-        private val diffUtil = object : DiffUtil.ItemCallback<PetDto>() {
-            override fun areItemsTheSame(oldItem: PetDto, newItem: PetDto): Boolean {
+        private val diffUtil = object : DiffUtil.ItemCallback<Pet>() {
+            override fun areItemsTheSame(oldItem: Pet, newItem: Pet): Boolean {
                 return oldItem.petId == newItem.petId
             }
 
-            override fun areContentsTheSame(oldItem: PetDto, newItem: PetDto): Boolean {
+            override fun areContentsTheSame(oldItem: Pet, newItem: Pet): Boolean {
                 return oldItem == newItem
             }
         }

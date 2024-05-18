@@ -2,10 +2,10 @@ package com.dohyun.petmemory.ui.diary
 
 import android.os.Parcelable
 import androidx.compose.runtime.Stable
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dohyun.domain.diary.DiaryData
+import com.dohyun.domain.diary.Diary
 import com.dohyun.domain.diary.DiaryRepository
-import com.dohyun.petmemory.base.StateViewModel
 import com.dohyun.petmemory.util.LocationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class DiaryDetailViewModel @Inject constructor(
     private val diaryRepository: DiaryRepository,
     private val locationUtil: LocationUtil
-) : StateViewModel<DiaryState>(DiaryState.None) {
+) : ViewModel() {
 
     private val _uiState: MutableStateFlow<DiaryDetailUiState> = MutableStateFlow(DiaryDetailUiState.Loading)
     val uiState: StateFlow<DiaryDetailUiState> = _uiState.asStateFlow()
@@ -90,13 +90,13 @@ data class DiaryDetail(
     val id: String,
     val title: String = "",
     val date: String,
-    val content: String? = "",
+    val content: String = "",
     val imageUrl: List<String> = listOf(),
     val lat: Double,
     val lng: Double,
     val address: String,
 ): Parcelable {
-    fun toDiary() = DiaryData(
+    fun toDiary() = Diary(
         id = id,
         title = title,
         date = date,

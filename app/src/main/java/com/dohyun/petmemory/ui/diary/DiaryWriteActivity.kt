@@ -6,12 +6,10 @@ import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import com.dohyun.domain.diary.DiaryData
+import com.dohyun.domain.diary.Diary
 import com.dohyun.petmemory.R
-import com.dohyun.petmemory.base.StateActivity
+import com.dohyun.petmemory.base.BaseActivity
 import com.dohyun.petmemory.databinding.ActivityDiaryWriteBinding
-import com.dohyun.petmemory.extension.showToast
-import com.dohyun.petmemory.ui.diary.adapter.DiaryWritePhotoAdapter
 import com.dohyun.petmemory.util.LocationUtil
 import com.dohyun.petmemory.util.MediaUtil
 import com.gun0912.tedpermission.PermissionListener
@@ -21,9 +19,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DiaryWriteActivity : StateActivity<ActivityDiaryWriteBinding, DiaryState>() {
+class DiaryWriteActivity : BaseActivity<ActivityDiaryWriteBinding>() {
     override val layoutId: Int = R.layout.activity_diary_write
-    override val stateViewModel: DiaryViewModel by viewModels()
 
     private val viewModel: DiaryWriteViewModel by viewModels()
 
@@ -33,14 +30,8 @@ class DiaryWriteActivity : StateActivity<ActivityDiaryWriteBinding, DiaryState>(
     @Inject
     lateinit var locationUtil: LocationUtil
 
-    private var imageUrlList: MutableList<String> = mutableListOf()
-    private lateinit var diaryWritePhotoAdapter: DiaryWritePhotoAdapter
-    private val imageNeedSaveToGalleryList = mutableSetOf<Int>()
-
-    private var diaryData: DiaryData? = null
+    private var diary: Diary? = null
     private var isEdit = false
-
-    private var currentPhotoIndex = 0
 
     private val permissionStorageList = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         arrayOf(
@@ -62,39 +53,6 @@ class DiaryWriteActivity : StateActivity<ActivityDiaryWriteBinding, DiaryState>(
         const val REQ_IMAGE = 0
     }
 
-    override fun render(state: DiaryState) {
-        when (state) {
-            is DiaryState.Loading -> {
-                stateViewModel.showLoading()
-            }
-
-            is DiaryState.Edit -> {
-                val intent = Intent().apply {
-                    putExtra(KEY_DIARY_DATA, state.diaryData)
-                }
-
-                setResult(RESULT_OK, intent)
-                finish()
-            }
-
-            is DiaryState.Save -> {
-                val intent = Intent(SyncDiaryData.KEY_SYNC_EVENT).apply {
-                    putExtra(SyncDiaryData.KEY_SYNC_EVENT, SyncDiaryData(diaryData = state.diaryData, event = DiaryEvent.Save))
-                }
-
-                sendBroadcast(intent)
-                finish()
-            }
-
-            is DiaryState.Fail -> {
-                state.message.showToast(this)
-            }
-
-            else -> {
-            }
-        }
-    }
-
     override fun onBackPressed() {
         super.onBackPressed()
 
@@ -106,49 +64,16 @@ class DiaryWriteActivity : StateActivity<ActivityDiaryWriteBinding, DiaryState>(
 
     override fun initView() {
         isEdit = intent?.getBooleanExtra(KEY_IS_DIARY_EDIT, false) ?: false
-        diaryData = intent?.getSerializableExtra(KEY_DIARY_DATA) as? DiaryData
+        diary = intent?.getSerializableExtra(KEY_DIARY_DATA) as? Diary
 
-        val diaryDetail = with(diaryData!!) {
+        val diaryDetail = with(diary!!) {
             DiaryDetail(
                 id, title, date, content, imageUrl, lat!!, lng!!, locationUtil.getAddress(lat!!, lng!!)
             )
         }
 
         setContent {
-            DiaryWriteScreen(onFinish = { onBackPressed() }, isEdit = isEdit, diary = diaryDetail)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQ_IMAGE) {
-                data?.data?.let {
-                    if (imageUrlList.size < 10 && imageUrlList[currentPhotoIndex].isEmpty()) {
-                        imageUrlList.add("")
-                    }
-
-                    if (Build.MANUFACTURER.contains("Google")) {
-                        val path = mediaUtil.convertUriToPath(contentUri = it) ?: ""
-
-                        imageUrlList[currentPhotoIndex] = path
-                        imageNeedSaveToGalleryList.add(currentPhotoIndex)
-                    } else {
-                        imageUrlList[currentPhotoIndex] = it.toString()
-                    }
-
-                    val photoCount = imageUrlList.filter { url -> url.isNotEmpty() }.size
-
-                    binding.tvPhotoLimit.text = "$photoCount / 10"
-
-                    diaryWritePhotoAdapter.run {
-                        submitList(imageUrlList)
-                        notifyItemChanged(currentPhotoIndex)
-                    }
-                    binding.rvPhoto.scrollToPosition(currentPhotoIndex + 1)
-                }
-            }
+            DiaryWriteScreen(onFinish = { onBackPressed() }, isEdit = isEdit, diaryDetail = diaryDetail)
         }
     }
 
@@ -183,11 +108,10 @@ class DiaryWriteActivity : StateActivity<ActivityDiaryWriteBinding, DiaryState>(
         } else {
             checkPermission()
         }
-        diaryData = intent?.getSerializableExtra(KEY_DIARY_DATA) as? DiaryData
+        diary = intent?.getSerializableExtra(KEY_DIARY_DATA) as? Diary
 
         viewModel.run {
-            writing(diaryData = diaryData)
-            initProfileState()
+            onAction(DiaryWriteAction.Edit(diary))
         }
     }
 }

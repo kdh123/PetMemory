@@ -10,7 +10,6 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.util.Rational
 import android.view.Surface.ROTATION_0
-import android.view.View
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -22,14 +21,12 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
-import com.dohyun.domain.diary.DiaryData
+import com.dohyun.domain.diary.Diary
 import com.dohyun.petmemory.R
 import com.dohyun.petmemory.base.BaseActivity
 import com.dohyun.petmemory.common.LoadingDialog
 import com.dohyun.petmemory.databinding.ActivityCameraBinding
 import com.dohyun.petmemory.extension.showToast
-import com.dohyun.petmemory.extension.visible
-import com.dohyun.petmemory.ui.main.MainActivity
 import com.dohyun.petmemory.util.DateUtil
 import com.dohyun.petmemory.util.MediaUtil
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -89,7 +86,6 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
     )
 
     companion object {
-        const val REQ_WRITE = 0
         const val REQ_IMAGE = 1
     }
 
@@ -129,23 +125,6 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
                 flContainer.updateLayoutParams {
                     cameraFrameWidth = frameLayout.width
                 }
-            }
-
-            lSelectBottom.clAlbum.setOnClickListener {
-                Intent(this@CameraActivity, MainActivity::class.java).apply {
-                    putExtra(MainActivity.KEY_IS_MOVE_TO_ALBUM, true)
-                }.run {
-                    startActivity(this)
-                }
-            }
-
-            lSelectBottom.clCameraMore.setOnClickListener {
-                clUpload.visible()
-                clSelectBottom.visibility = View.GONE
-            }
-
-            lSelectBottom.clWriteDiary.setOnClickListener {
-                moveToWriteDiary()
             }
         }
     }
@@ -376,16 +355,6 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQ_WRITE) {
-                val getData = data?.getSerializableExtra(DiaryWriteActivity.KEY_DIARY_DATA) as? DiaryData ?: return
-
-                Intent(this, MainActivity::class.java).apply {
-                    putExtra(MainActivity.KEY_DIARY_DATA, getData)
-                }.run {
-                    startActivity(this)
-                }
-            }
-
             if (requestCode == REQ_IMAGE) {
                 data?.data?.let {
                     imageName = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(System.currentTimeMillis())
@@ -398,7 +367,7 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
 
     private fun moveToWriteDiary() {
         Intent(this@CameraActivity, DiaryWriteActivity::class.java).apply {
-            val diaryData = DiaryData(
+            val diary = Diary(
                 id = imageName,
                 title = "",
                 date = DateUtil.todayDate(),
@@ -408,9 +377,9 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
                 lng = lng
             )
 
-            putExtra(DiaryWriteActivity.KEY_DIARY_DATA, diaryData)
+            putExtra(DiaryWriteActivity.KEY_DIARY_DATA, diary)
         }.run {
-            startActivityForResult(this, REQ_WRITE)
+            startActivity(this)
         }
     }
 }

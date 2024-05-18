@@ -1,9 +1,5 @@
-@file:OptIn(ExperimentalNaverMapApi::class)
-
 package com.dohyun.petmemory.ui.home
 
-import android.annotation.SuppressLint
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,31 +21,22 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.BottomSheetScaffoldState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -62,23 +49,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.dohyun.domain.diary.DiaryData
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.diary.Diary
+import com.dohyun.domain.pet.Pet
 import com.dohyun.petmemory.R
-import com.dohyun.petmemory.util.LocationUtil
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.CameraPosition
-import com.naver.maps.map.CameraUpdate
-import com.naver.maps.map.compose.ExperimentalNaverMapApi
-import com.naver.maps.map.compose.MapProperties
-import com.naver.maps.map.compose.MapUiSettings
-import com.naver.maps.map.compose.Marker
-import com.naver.maps.map.compose.MarkerState
-import com.naver.maps.map.compose.NaverMap
-import com.naver.maps.map.compose.rememberCameraPositionState
-import com.naver.maps.map.overlay.OverlayImage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToDetail: (String) -> Unit,
@@ -88,17 +62,6 @@ fun HomeScreen(
     val homeUiState by viewModel.homeUiState.collectAsStateWithLifecycle()
     val diaries = (homeUiState as? HomeUiState.Success)?.diaries ?: listOf()
     val pets = (homeUiState as? HomeUiState.Success)?.pets ?: listOf()
-    val bottomSheetState = rememberBottomSheetScaffoldState()
-
-    LaunchedEffect(true) {
-        bottomSheetState.bottomSheetState.expand()
-
-        viewModel.isExpand.collect {
-            if (it) {
-                bottomSheetState.bottomSheetState.expand()
-            }
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -126,22 +89,19 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(top = innerPadding.calculateTopPadding())) {
+        Column(
+            modifier = Modifier.padding(innerPadding)
+        ) {
             if (homeUiState is HomeUiState.Success) {
-                TimeLine(
-                    bottomSheetState = bottomSheetState,
-                    diaries = diaries,
-                    onNavigateToDetail = onNavigateToDetail,
-                    onChangeAlpha = viewModel::setSheetAlpha
-                )
                 PetProfile(pets = pets)
+                TimeLine(diaries = diaries, onNavigateToDetail = onNavigateToDetail)
             }
         }
     }
 }
 
 @Composable
-fun PetProfile(pets: List<PetDto>) {
+fun PetProfile(pets: List<Pet>) {
     var xOffset by remember {
         mutableIntStateOf(0)
     }
@@ -181,7 +141,7 @@ fun PetProfile(pets: List<PetDto>) {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Pet(pet: PetDto) {
+fun Pet(pet: Pet) {
     GlideImage(
         model = pet.petImageUrl,
         contentDescription = "diary image",
@@ -195,68 +155,23 @@ fun Pet(pet: PetDto) {
     }
 }
 
-@SuppressLint("CoroutineCreationDuringComposition")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeLine(
-    bottomSheetState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
-    diaries: List<DiaryData>,
-    onNavigateToDetail: (String) -> Unit,
-    onChangeAlpha: (Float) -> Unit
+    diaries: List<Diary>,
+    onNavigateToDetail: (String) -> Unit
 ) {
-    var sheetHeight by remember {
-        mutableStateOf(0.dp)
-    }
-    val localDensity = LocalDensity.current
-    val peekHeight = with(localDensity) { 56.dp.toPx() }
-
-    BottomSheetScaffold(
-        modifier = Modifier.onGloballyPositioned {
-            sheetHeight = with(localDensity) { (it.size.height.toDp() - 56.dp) }
-            val firstHeight = with(localDensity) { 56.dp.toPx() }
-            val wholeHeight = with(localDensity) { (it.size.height.toDp()).toPx() }
-            val offset = bottomSheetState.bottomSheetState.requireOffset()
-
-            var alpha = (wholeHeight - peekHeight + firstHeight - offset) / (wholeHeight - peekHeight)
-            if (alpha < 0.1f) {
-                alpha = 0.0f
-            }
-            onChangeAlpha(alpha)
-        },
-        scaffoldState = bottomSheetState,
-        sheetContent = {
-            Column(modifier = Modifier.height(sheetHeight)) {
-                Text(
-                    text = "타임라인",
-                    modifier = Modifier
-                        .align(alignment = Alignment.CenterHorizontally)
-                        .wrapContentHeight()
-                        .padding(vertical = 18.dp),
-                    fontSize = 18.sp,
-                    fontFamily = FontFamily(Font(R.font.bmdohyun_ttf)),
-                )
-                LazyColumn {
-                    items(items = diaries, key = {
-                        it.id
-                    }) {
-                        Diary(data = it, onClick = onNavigateToDetail)
-                    }
-                }
-            }
-        },
-        sheetPeekHeight = 56.dp,
-        sheetContainerColor = colorResource(id = R.color.white),
-    ) {
-        Map(
-            diaries = diaries.filter { it.lat != 0.0 && it.lng != 0.0 },
-            onNavigateToDetail = onNavigateToDetail
-        )
+    LazyColumn {
+        items(items = diaries, key = {
+            it.id
+        }) {
+            Diary(diary = it, onClick = onNavigateToDetail)
+        }
     }
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Diary(data: DiaryData, onClick: (String) -> Unit) {
+fun Diary(diary: Diary, onClick: (String) -> Unit) {
     val localDensity = LocalDensity.current
     var lineHeight by remember {
         mutableStateOf(0.dp)
@@ -267,13 +182,13 @@ fun Diary(data: DiaryData, onClick: (String) -> Unit) {
             .fillMaxWidth()
             .wrapContentHeight()
             .clickable {
-                onClick(data.id)
+                onClick(diary.id)
             }
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.width(5.dp))
             GlideImage(
-                model = data.pet?.petImageUrl ?: R.drawable.ic_add,
+                model = diary.pet?.petImageUrl ?: R.drawable.ic_add,
                 contentDescription = "profile image",
                 modifier = Modifier
                     .clip(CircleShape)
@@ -283,7 +198,7 @@ fun Diary(data: DiaryData, onClick: (String) -> Unit) {
                 builder.centerCrop()
             }
             Spacer(modifier = Modifier.width(5.dp))
-            Text(text = data.date, modifier = Modifier.align(Alignment.CenterVertically))
+            Text(text = diary.date, modifier = Modifier.align(Alignment.CenterVertically))
         }
 
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -308,7 +223,7 @@ fun Diary(data: DiaryData, onClick: (String) -> Unit) {
 
                 Row(modifier = Modifier.fillMaxWidth()) {
                     AsyncImage(
-                        model = data.imageUrl[0],
+                        model = diary.imageUrl[0],
                         contentDescription = null,
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
@@ -324,123 +239,6 @@ fun Diary(data: DiaryData, onClick: (String) -> Unit) {
 
                 Spacer(modifier = Modifier.height(10.dp))
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun Map(diaries: List<DiaryData>, onNavigateToDetail: (String) -> Unit) {
-    var currentLocation by remember {
-        mutableStateOf(LatLng(37.453522, 126.6787955))
-    }
-    val cameraPositionState = rememberCameraPositionState {
-        // 카메라 초기 위치를 설정합니다.
-        position = CameraPosition(currentLocation, 11.0)
-    }
-    val mapProperties by remember {
-        mutableStateOf(
-            MapProperties(maxZoom = 20.0, minZoom = 5.0)
-        )
-    }
-    val mapUiSettings by remember {
-        mutableStateOf(
-            MapUiSettings(isLocationButtonEnabled = false)
-        )
-    }
-    val pagerState = rememberPagerState(pageCount = {
-        diaries.size
-    })
-
-    LaunchedEffect(pagerState, diaries) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            if (diaries.isNotEmpty()) {
-                currentLocation = LatLng(diaries[page].lat ?: 37.532600, diaries[page].lng ?: 127.024612)
-                cameraPositionState.animate(CameraUpdate.toCameraPosition(CameraPosition(currentLocation, 15.0)))
-            }
-        }
-    }
-    /*
-    cameraPositionState.move(
-        CameraUpdate.toCameraPosition(CameraPosition(currentLocation, 15.0))
-    )*/
-
-    Box(Modifier.fillMaxSize()) {
-        NaverMap(cameraPositionState = cameraPositionState, properties = mapProperties, uiSettings = mapUiSettings) {
-            diaries.forEach { diary ->
-                Marker(
-                    state = MarkerState(position = LatLng(diary.lat ?: 37.532600, diary.lng ?: 127.024612)),
-                    icon = OverlayImage.fromResource(R.drawable.img_map_pin),
-                    width = 42.dp,
-                    height = 42.dp,
-                    onClick = {
-                        onNavigateToDetail(diary.id)
-                        true
-                    }
-                )
-            }
-        }
-
-        HorizontalPager(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 124.dp)
-                .height(120.dp)
-                .align(Alignment.BottomCenter),
-            state = pagerState,
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            pageSpacing = 10.dp
-        ) { page ->
-            MapCard(diary = diaries[page], onNavigateToDetail = onNavigateToDetail)
-        }
-    }
-}
-
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun MapCard(diary: DiaryData, onNavigateToDetail: (String) -> Unit) {
-    val locationUtil = LocationUtil(LocalContext.current)
-
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(color = colorResource(id = R.color.white))
-            .clickable {
-                onNavigateToDetail(diary.id)
-            }
-    ) {
-        GlideImage(
-            model = diary.imageUrl[0],
-            contentDescription = null,
-            modifier = Modifier
-                .aspectRatio(1f),
-            contentScale = ContentScale.Crop,
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(15.dp)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = diary.title,
-                fontFamily = FontFamily(Font(R.font.bmdohyun_ttf)),
-                fontSize = 18.sp
-            )
-            Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = diary.date,
-                fontFamily = FontFamily(Font(R.font.airbnbcereal_w_lt)),
-                fontSize = 18.sp
-            )
-            Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = locationUtil.getAddress(diary.lat!!, diary.lng!!),
-                fontFamily = FontFamily(Font(R.font.airbnbcereal_w_lt)),
-                fontSize = 18.sp
-            )
         }
     }
 }

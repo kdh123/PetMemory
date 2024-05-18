@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -23,5 +23,5 @@ interface PetDao {
     fun getPetInfo(petId: Int): PetEntity?
 
     @Update(entity = PetEntity::class)
-    fun updatePet(petDto: PetDto)
+    fun updatePet(pet: Pet)
 }

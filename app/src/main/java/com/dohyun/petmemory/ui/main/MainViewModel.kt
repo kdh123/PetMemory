@@ -2,7 +2,7 @@ package com.dohyun.petmemory.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import com.dohyun.domain.pet.PetRepository
 import com.dohyun.domain.user.UserRepository
 import com.dohyun.petmemory.extension.handle
@@ -21,8 +21,8 @@ class MainViewModel @Inject constructor(
             val petProfiles = petRepository.getAllPet().first()
 
             if (petProfiles.isEmpty()) {
-                val petDto = userRepository.run {
-                    PetDto(
+                val pet = userRepository.run {
+                    Pet(
                         0,
                         getPetBigType(),
                         getPetType(),
@@ -35,7 +35,7 @@ class MainViewModel @Inject constructor(
                         getPetImageUrl()
                     )
                 }
-                petRepository.savePet(petDto = petDto)
+                petRepository.savePet(pet = pet)
             }
         })
     }

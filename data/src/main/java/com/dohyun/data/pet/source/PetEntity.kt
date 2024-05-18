@@ -3,7 +3,7 @@ package com.dohyun.data.pet.source
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -21,11 +21,11 @@ data class PetEntity(
     @ColumnInfo(name = "petSex") val petSex: Int,
     @ColumnInfo(name = "petImageUrl") val petImageUrl: String
 ) {
-    fun toDto() : PetDto{
+    fun toDto() : Pet{
         val thisYear = todayDate("yyyy").toInt()
         val birthYear = petBirthDay.substring(0, 4).toInt()
 
-        return PetDto(
+        return Pet(
             petId = petId,
             petBigType = petBigType,
             petType = petType,

@@ -1,15 +1,13 @@
 package com.dohyun.petmemory.ui.home
 
-import com.dohyun.domain.diary.DiaryData
-import com.dohyun.domain.pet.PetDto
-import com.naver.maps.geometry.LatLng
+import com.dohyun.domain.diary.Diary
+import com.dohyun.domain.pet.Pet
 
 sealed interface HomeUiState {
     object Loading : HomeUiState
     data class Success(
-        val diaries: List<DiaryData>,
-        val pets: List<PetDto>,
-        val locations: List<LatLng>
+        val diaries: List<Diary>,
+        val pets: List<Pet>
     ) : HomeUiState
     data class Fail(val message: String?) : HomeUiState
 }

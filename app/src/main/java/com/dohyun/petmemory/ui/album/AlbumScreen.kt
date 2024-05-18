@@ -32,7 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.dohyun.domain.diary.DiaryData
+import com.dohyun.domain.diary.Diary
 import com.dohyun.petmemory.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +74,7 @@ fun AlbumScreen(
 @Composable
 fun AlbumContent(
     modifier: Modifier = Modifier,
-    diaries: List<DiaryData>,
+    diaries: List<Diary>,
     onNavigateToDetail: (String) -> Unit,
     onNavigateToWrite: () -> Unit
 ) {
@@ -103,14 +103,16 @@ fun AlbumContent(
 @Preview(showBackground = true)
 @Composable
 fun AlbumContentPreview() {
-    val list = mutableListOf<DiaryData>()
+    val list = mutableListOf<Diary>()
 
     for (i in 0..100) {
         list.add(
-            DiaryData(
+            Diary(
                 id = "$i",
                 date = "hi",
-                imageUrl = listOf("")
+                imageUrl = listOf(""),
+                lat = null,
+                lng = null
             )
         )
     }
@@ -120,7 +122,7 @@ fun AlbumContentPreview() {
 }
 
 @Composable
-fun AlbumGrid(diaries: List<DiaryData>, onNavigateToDetail: (String) -> Unit) {
+fun AlbumGrid(diaries: List<Diary>, onNavigateToDetail: (String) -> Unit) {
     LazyVerticalStaggeredGrid(
         contentPadding = PaddingValues(horizontal = 4.dp),
         columns = StaggeredGridCells.Fixed(3),
@@ -141,14 +143,16 @@ fun AlbumGrid(diaries: List<DiaryData>, onNavigateToDetail: (String) -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun AlbumGridPreview() {
-    val list = mutableListOf<DiaryData>()
+    val list = mutableListOf<Diary>()
 
     for (i in 0..100) {
         list.add(
-            DiaryData(
+            Diary(
                 id = "$i",
                 date = "hi",
-                imageUrl = listOf("")
+                imageUrl = listOf(""),
+                lat = null,
+                lng = null
             )
         )
     }
@@ -160,7 +164,7 @@ fun AlbumGridPreview() {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Diary(diary: DiaryData, onNavigateToDetail: (String) -> Unit) {
+fun Diary(diary: Diary, onNavigateToDetail: (String) -> Unit) {
     GlideImage(
         model = diary.imageUrl[0],
         contentDescription = null,

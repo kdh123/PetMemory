@@ -1,8 +1,8 @@
 package com.dohyun.data
 
 import com.dohyun.data.diary.source.DiaryEntity
-import com.dohyun.domain.diary.DiaryData
+import com.dohyun.domain.diary.Diary
 
-fun DiaryData.toDiaryEntity() = DiaryEntity(
+fun Diary.toDiaryEntity() = DiaryEntity(
     id, title, date, content, imageUrl, lat, lng, pet
 )

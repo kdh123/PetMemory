@@ -3,8 +3,8 @@ package com.dohyun.data.diary.source
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.dohyun.domain.diary.DiaryData
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.diary.Diary
+import com.dohyun.domain.pet.Pet
 
 @Entity(tableName = "diary")
 data class DiaryEntity(
@@ -15,20 +15,22 @@ data class DiaryEntity(
     @ColumnInfo(name = "imageUrl") val imageUrl: List<String>,
     @ColumnInfo(name = "lat") val lat: Double? = null,
     @ColumnInfo(name = "lng") val lng: Double? = null,
-    @ColumnInfo(name = "pet") val petDto: PetDto? = null
+    @ColumnInfo(name = "pet") val pet: Pet? = null
 ) {
-    fun toDto(): DiaryData {
-        return DiaryData(
+    fun toDiary(): Diary {
+        return Diary(
             id = id,
             title = title.ifEmpty {
                 "(제목 없음)"
             },
             date = date,
-            content = content,
+            content = content?.ifEmpty {
+                "(내용 없음)"
+            } ?: "(내용 없음)",
             imageUrl = imageUrl,
-            lat = lat ?: 0.0,
-            lng = lng ?: 0.0,
-            pet = petDto
+            lat = lat,
+            lng = lng,
+            pet = pet
         )
     }
 }

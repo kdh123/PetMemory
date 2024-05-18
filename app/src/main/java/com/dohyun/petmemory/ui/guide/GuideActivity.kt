@@ -7,7 +7,7 @@ import com.dohyun.petmemory.R
 import com.dohyun.petmemory.base.BaseActivity
 import com.dohyun.petmemory.databinding.ActivityGuideBinding
 import com.dohyun.petmemory.extension.handle
-import com.dohyun.petmemory.ui.main.MainActivity
+import com.dohyun.petmemory.ui.main.MainActivity2
 import com.dohyun.petmemory.ui.profile.ProfileActivity
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -27,7 +27,7 @@ class GuideActivity : BaseActivity<ActivityGuideBinding>() {
                         putExtra(ProfileActivity.KEY_IS_PROFILE_INIT, true)
                     }
                 } else {
-                    Intent(this@GuideActivity, MainActivity::class.java)
+                    Intent(this@GuideActivity, MainActivity2::class.java)
                 }.run {
                     startActivity(this)
                     finish()

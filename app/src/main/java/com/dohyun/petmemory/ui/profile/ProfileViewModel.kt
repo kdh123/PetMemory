@@ -1,7 +1,7 @@
 package com.dohyun.petmemory.ui.profile
 
 import androidx.lifecycle.viewModelScope
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import com.dohyun.domain.pet.PetRepository
 import com.dohyun.domain.setting.SettingRepository
 import com.dohyun.petmemory.base.StateViewModel
@@ -25,7 +25,7 @@ class ProfileViewModel @Inject constructor(
     private val _profileUiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(ProfileUiState.Loading)
     val profileUiState = _profileUiState.asStateFlow()
 
-    private val profiles: MutableStateFlow<List<PetDto>> = MutableStateFlow(listOf())
+    private val profiles: MutableStateFlow<List<Pet>> = MutableStateFlow(listOf())
 
     init {
         viewModelScope.launch {
@@ -55,16 +55,6 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun getProfile() {
-        viewModelScope.handle(
-            dispatcher = Dispatchers.IO,
-            block = {
-                val petList = petRepository.getAllPet().first()
-
-                _state.value = ProfileState.SuccessLoad(petList = petList)
-            })
-    }
-
     fun getProfiles() {
         viewModelScope.handle(
             dispatcher = Dispatchers.IO,
@@ -73,14 +63,14 @@ class ProfileViewModel @Inject constructor(
             })
     }
 
-    fun saveProfile(petDto: PetDto, isUpdate: Boolean) {
+    fun saveProfile(pet: Pet, isUpdate: Boolean) {
         viewModelScope.handle(
             dispatcher = Dispatchers.IO,
             block = {
                 if (isUpdate) {
-                    petRepository.updatePet(petDto = petDto)
+                    petRepository.updatePet(pet = pet)
                 } else {
-                    petRepository.savePet(petDto = petDto)
+                    petRepository.savePet(pet = pet)
                 }
 
                 settingRepository.run {
@@ -89,7 +79,7 @@ class ProfileViewModel @Inject constructor(
                     }
                 }
 
-                _state.value = ProfileState.SuccessSave(petDto = petDto)
+                _state.value = ProfileState.SuccessSave(pet = pet)
             })
     }
 }
