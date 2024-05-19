@@ -10,7 +10,7 @@ data class Pet(
     val age: Int = 0,
     val birthDay: String = "",
     val sinceDay: String = "",
-    val weight: Double = 0.0,
+    val weight: String = "0.0",
     val sex: Int = 0,
     val imageUrl: String = ""
 ) : Serializable

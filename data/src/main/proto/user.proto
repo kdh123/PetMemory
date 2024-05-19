@@ -13,6 +13,6 @@ message UserInfoData {
   string petBirthDay = 8;
   string petSince = 9;
   int32 petSex = 10;
-  double petWeight = 12;
+  string petWeight = 12;
   string petImageUrl = 13;
 }

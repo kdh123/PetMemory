@@ -89,11 +89,11 @@ class UserRemoteDataSource : UserDataSource {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getPetWeight(): Double {
+    override suspend fun getPetWeight(): String {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updatePetWeight(weight: Double) {
+    override suspend fun updatePetWeight(weight: String) {
         TODO("Not yet implemented")
     }
 }

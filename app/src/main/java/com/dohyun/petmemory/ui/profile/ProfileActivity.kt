@@ -240,7 +240,7 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
                     age = thisYear - birthDayYear,
                     birthDay = etBirthDay.text.toString(),
                     sinceDay = etSinceDay.text.toString(),
-                    weight = etWeight.text.toString().toDouble(),
+                    weight = etWeight.text.toString(),
                     sex = petSex,
                     imageUrl = petImageUrl
                 )

@@ -39,7 +39,11 @@ class HomeViewModel @Inject constructor(
                         }
                     } else {
                         pets.map { pet ->
-                            val isSelected = _homeUiState.value.selectedPets.filter { it.pet.id == pet.id }[0].isSelected
+                            val isSelected = try {
+                                _homeUiState.value.selectedPets.filter { it.pet.id == pet.id }[0].isSelected
+                            } catch (e: Exception) {
+                                true
+                            }
                             SelectedPet(isSelected = isSelected, pet = pet)
                         }
                     }

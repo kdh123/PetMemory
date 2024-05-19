@@ -28,7 +28,7 @@ class PetLocalDataSource @Inject constructor(private val db: AppDatabase) : PetD
                 age,
                 birthDay,
                 sinceDay,
-                weight,
+                weight.toDouble(),
                 sex,
                 imageUrl
             )
@@ -51,7 +51,7 @@ class PetLocalDataSource @Inject constructor(private val db: AppDatabase) : PetD
                 age,
                 birthDay,
                 sinceDay,
-                weight,
+                weight.toDouble(),
                 sex,
                 imageUrl
             )

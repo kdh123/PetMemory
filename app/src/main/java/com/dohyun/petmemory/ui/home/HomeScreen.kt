@@ -42,6 +42,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -92,7 +93,20 @@ fun HomeScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             Profiles(selectedPets = pets, onSelected = viewModel::onAction)
-            TimeLine(diaries = diaries, onNavigateToDetail = onNavigateToDetail)
+            if (diaries.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = "추억을 추가해보세요",
+                        fontSize = 20.sp,
+                        fontFamily = FontFamily(Font(R.font.bmdohyun_ttf)),
+                        color = colorResource(id = R.color.black),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            } else {
+                TimeLine(diaries = diaries, onNavigateToDetail = onNavigateToDetail)
+            }
         }
     }
 }

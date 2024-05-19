@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -95,7 +96,20 @@ fun AlbumContent(
                 color = colorResource(id = R.color.black)
             )
         }
-        AlbumGrid(diaries = diaries, onNavigateToDetail)
+        if (diaries.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text = "추억을 추가해보세요",
+                    fontSize = 20.sp,
+                    fontFamily = FontFamily(Font(R.font.bmdohyun_ttf)),
+                    color = colorResource(id = R.color.black),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        } else {
+            AlbumGrid(diaries = diaries, onNavigateToDetail)
+        }
     }
 }
 

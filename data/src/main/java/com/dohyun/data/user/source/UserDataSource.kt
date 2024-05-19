@@ -35,6 +35,6 @@ interface UserDataSource {
     suspend fun getPetImageUrl(): String
     suspend fun updatePetImageUrl(imageUrl: String)
 
-    suspend fun getPetWeight(): Double
-    suspend fun updatePetWeight(weight: Double)
+    suspend fun getPetWeight(): String
+    suspend fun updatePetWeight(weight: String)
 }

@@ -77,9 +77,6 @@ fun ProfileEditScreen(
     var showSinceDayCalender by remember {
         mutableStateOf(false)
     }
-    var weight by remember {
-        mutableStateOf("")
-    }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pet = uiState.pet
@@ -106,7 +103,6 @@ fun ProfileEditScreen(
 
     LaunchedEffect(true) {
         if (isEdit) {
-            weight = "${pet.weight}"
             viewModel.onAction(action = ProfileEditAction.Load(petId = petId))
         }
     }
@@ -136,7 +132,7 @@ fun ProfileEditScreen(
     Column(
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        AppBar(pet = uiState.pet.copy(weight = weight.toDouble()), isEdit = isEdit, onAction = viewModel::onAction)
+        AppBar(pet = uiState.pet, isEdit = isEdit, onAction = viewModel::onAction)
         ProfileImage(pet = uiState.pet, onAction = {
             launcher.launch(
                 PickVisualMediaRequest(
@@ -149,9 +145,7 @@ fun ProfileEditScreen(
         NameInput(pet = uiState.pet, onAction = viewModel::onAction)
         BirthDayInput(pet = uiState.pet, showBottomSheet = { showBirthDayCalender = true })
         SinceDayInput(pet = uiState.pet, showBottomSheet = { showSinceDayCalender = true })
-        WeightInput(weight = weight, onAction = {
-            weight = it
-        })
+        WeightInput(pet = uiState.pet, onAction = viewModel::onAction)
         SexInput(pet = uiState.pet, onAction = viewModel::onAction)
     }
 }
@@ -220,7 +214,7 @@ fun ProfileEditContent() {
         NameInput(pet = Pet(), onAction = { })
         BirthDayInput(pet = Pet(), showBottomSheet = { })
         SinceDayInput(pet = Pet(), showBottomSheet = { })
-        WeightInput(weight = "0.0", onAction = { })
+        WeightInput(pet = Pet(), onAction = { })
         SexInput(pet = Pet(), onAction = { })
     }
 }
@@ -547,7 +541,7 @@ fun SinceDayInput(pet: Pet, showBottomSheet: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeightInput(weight: String, onAction: (String) -> Unit) {
+fun WeightInput(pet: Pet, onAction: (ProfileEditAction) -> Unit) {
     Row(modifier = Modifier.padding(bottom = 10.dp)) {
         Box(
             modifier = Modifier
@@ -563,10 +557,10 @@ fun WeightInput(weight: String, onAction: (String) -> Unit) {
         }
         OutlinedTextField(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            value = weight,
+            value = pet.weight,
             textStyle = LocalTextStyle.current.copy(color = colorResource(id = R.color.black)),
             onValueChange = {
-                onAction(it)
+                onAction(ProfileEditAction.Edit(pet = pet.copy(weight = it)))
             },
             colors = TextFieldDefaults.textFieldColors(
                 disabledTextColor = Color.Black,

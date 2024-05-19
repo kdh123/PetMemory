@@ -1,5 +1,7 @@
 package com.dohyun.petmemory.ui.profile
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,6 +35,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -64,6 +67,7 @@ fun ProfilesPager(pets: List<Pet>, onNavigateToEditScreen: (Int) -> Unit) {
     val pagerState = rememberPagerState(pageCount = {
         pets.size
     })
+    val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxWidth()) {
         HorizontalPager(
@@ -75,20 +79,34 @@ fun ProfilesPager(pets: List<Pet>, onNavigateToEditScreen: (Int) -> Unit) {
             // page content
             Profile(pet = pets[page], onNavigateToEditScreen = onNavigateToEditScreen)
         }
-
-        Menu(text = "의견 남기기", resId = R.drawable.ic_revise)
+        Menu(text = "의견 남기기", resId = R.drawable.ic_revise) {
+            Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:dnlwkem39@gmail.com")
+            }.run {
+                context.startActivity(this)
+            }
+        }
         Spacer(modifier = Modifier.height(10.dp))
-        Menu(text = "개인 정보 처리 방침", resId = R.drawable.ic_privacy)
+        Menu(text = "개인 정보 처리 방침", resId = R.drawable.ic_privacy) {
+            val browserIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://sites.google.com/view/petmemory/")
+            )
+            context.startActivity(browserIntent)
+        }
     }
 }
 
 @Composable
-fun Menu(text: String, resId: Int) {
+fun Menu(text: String, resId: Int, onNavigate: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(horizontal = 32.dp)
+            .clickable {
+                onNavigate()
+            }
     ) {
         Image(
             modifier = Modifier

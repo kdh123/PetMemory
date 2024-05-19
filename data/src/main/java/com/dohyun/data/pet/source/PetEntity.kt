@@ -32,7 +32,7 @@ data class PetEntity(
             name = petName,
             birthDay = petBirthDay,
             sinceDay = petSinceDay,
-            weight = petWeight,
+            weight = "$petWeight",
             sex = petSex,
             imageUrl = petImageUrl,
             age = thisYear - birthYear
