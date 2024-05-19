@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.profile
+package com.dohyun.petmemory.ui.profile.edit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +18,7 @@ class ProfileEditViewModel @Inject constructor(
     private val settingRepository: SettingRepository
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<ProfileEditUiState2> = MutableStateFlow(ProfileEditUiState2())
+    private val _uiState: MutableStateFlow<ProfileEditUiState> = MutableStateFlow(ProfileEditUiState())
     val uiState = _uiState.asStateFlow()
 
     fun onAction(action: ProfileEditAction) {

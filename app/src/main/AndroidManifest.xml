@@ -45,6 +45,9 @@
         <activity
             android:name=".ui.profile.ProfileActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.profile.ProfileSetActivity"
+            android:exported="false" />
 
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"

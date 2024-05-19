@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.profile
+package com.dohyun.petmemory.ui.profile.edit
 
 import com.dohyun.domain.pet.Pet
 

@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.profile
+package com.dohyun.petmemory.ui.profile.edit
 
 import android.content.Intent
 import android.net.Uri

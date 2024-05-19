@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -52,7 +51,7 @@ import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel2 = hiltViewModel(),
+    viewModel: ProfileViewModel = hiltViewModel(),
     onNavigateToEditScreen: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

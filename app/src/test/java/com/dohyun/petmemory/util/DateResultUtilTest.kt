@@ -4,7 +4,7 @@ package com.dohyun.petmemory.util
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-class DateUtilTest {
+class DateResultUtilTest {
 
     @Test
     fun `테스트 입니다` () {

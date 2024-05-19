@@ -48,7 +48,7 @@ import com.dohyun.petmemory.ui.diary.detail.DiaryDetailViewModel
 import com.dohyun.petmemory.ui.diary.write.DiaryWriteScreen
 import com.dohyun.petmemory.ui.home.HomeScreen
 import com.dohyun.petmemory.ui.home.HomeViewModel
-import com.dohyun.petmemory.ui.profile.ProfileEditScreen
+import com.dohyun.petmemory.ui.profile.edit.ProfileEditScreen
 import com.dohyun.petmemory.ui.profile.ProfileScreen
 import dagger.hilt.android.AndroidEntryPoint
 
