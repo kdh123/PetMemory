@@ -8,7 +8,7 @@ import com.dohyun.petmemory.R
 import com.dohyun.petmemory.base.StateActivity
 import com.dohyun.petmemory.databinding.ActivitySplashBinding
 import com.dohyun.petmemory.ui.guide.GuideActivity
-import com.dohyun.petmemory.ui.main.MainActivity2
+import com.dohyun.petmemory.ui.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @SuppressLint("CustomSplashScreen")
@@ -22,7 +22,7 @@ class SplashActivity(override val layoutId: Int = R.layout.activity_splash) : St
                 if (state.destination == Destination.Guide) {
                     GuideActivity::class.java
                 } else {
-                    MainActivity2::class.java
+                    MainActivity::class.java
                 }.run {
                     val intent = Intent(this@SplashActivity, this)
                     startActivity(intent)

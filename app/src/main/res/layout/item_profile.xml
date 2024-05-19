@@ -72,7 +72,7 @@
 
                         <com.google.android.material.imageview.ShapeableImageView
                             android:id="@+id/siv_pet_profile"
-                            fullImage="@{data.petImageUrl}"
+                            fullImage="@{data.imageUrl}"
                             android:layout_width="0dp"
                             android:layout_height="0dp"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -90,7 +90,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginVertical="7dp"
                         android:fontFamily="@font/bmdohyun"
-                        android:text="@{data.petName}"
+                        android:text="@{data.name}"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold"
@@ -105,7 +105,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/airbnbcereal_w_md"
-                        android:text="@{data.petType}"
+                        android:text="@{data.type}"
                         android:textColor="@color/black"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -144,7 +144,7 @@
 
                         <TextView
                             android:id="@+id/tv_age"
-                            intToString="@{data.petAge}"
+                            intToString="@{data.age}"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/bmdohyun"
@@ -179,7 +179,7 @@
 
                         <TextView
                             android:id="@+id/tv_sex"
-                            intToSex="@{data.petSex}"
+                            intToSex="@{data.sex}"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/bmdohyun"
@@ -216,7 +216,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/bmdohyun"
-                            android:text="@{data.petBirthDay}"
+                            android:text="@{data.birthDay}"
                             android:textColor="@color/black"
                             android:textSize="14sp"
                             android:textStyle="bold"

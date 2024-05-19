@@ -1,7 +1,8 @@
-package com.dohyun.petmemory.ui.diary
+package com.dohyun.petmemory.ui.diary.write
 
 import android.net.Uri
 import com.dohyun.domain.diary.Diary
+import com.dohyun.petmemory.ui.diary.SelectedPet
 
 sealed interface DiaryWriteAction {
     data class Edit(val diary: Diary? = null, val pets: List<SelectedPet>? = null): DiaryWriteAction

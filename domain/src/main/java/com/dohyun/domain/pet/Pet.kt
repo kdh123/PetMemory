@@ -3,14 +3,14 @@ package com.dohyun.domain.pet
 import java.io.Serializable
 
 data class Pet(
-    val petId: Int = 0,
-    val petBigType: Int = 0,
-    val petType: String = "",
-    val petName: String = "",
-    val petAge: Int = 0,
-    val petBirthDay: String = "",
-    val petSinceDay: String = "",
-    val petWeight: Double = 0.0,
-    val petSex: Int = 0,
-    val petImageUrl: String = ""
+    val id: Int = 0,
+    val bigType: Int = 0,
+    val type: String = "",
+    val name: String = "",
+    val age: Int = 0,
+    val birthDay: String = "",
+    val sinceDay: String = "",
+    val weight: Double = 0.0,
+    val sex: Int = 0,
+    val imageUrl: String = ""
 ) : Serializable

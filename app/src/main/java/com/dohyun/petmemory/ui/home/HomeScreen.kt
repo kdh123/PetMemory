@@ -47,21 +47,20 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.dohyun.domain.diary.Diary
-import com.dohyun.domain.pet.Pet
 import com.dohyun.petmemory.R
+import com.dohyun.petmemory.ui.diary.SelectedPet
+import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun HomeScreen(
     onNavigateToDetail: (String) -> Unit,
     onNavigateToAlbum: () -> Unit,
-    viewModel: HomeViewModel2 = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val homeUiState by viewModel.homeUiState.collectAsStateWithLifecycle()
-    val diaries = (homeUiState as? HomeUiState.Success)?.diaries ?: listOf()
-    val pets = (homeUiState as? HomeUiState.Success)?.pets ?: listOf()
+    val diaries = homeUiState.diaries
+    val pets = homeUiState.selectedPets
 
     Scaffold(
         topBar = {
@@ -92,24 +91,20 @@ fun HomeScreen(
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
-            if (homeUiState is HomeUiState.Success) {
-                PetProfile(pets = pets)
-                TimeLine(diaries = diaries, onNavigateToDetail = onNavigateToDetail)
-            }
+            Profiles(selectedPets = pets, onSelected = viewModel::onAction)
+            TimeLine(diaries = diaries, onNavigateToDetail = onNavigateToDetail)
         }
     }
 }
 
 @Composable
-fun PetProfile(pets: List<Pet>) {
+fun Profiles(selectedPets: List<SelectedPet>, onSelected: (HomeAction) -> Unit) {
     var xOffset by remember {
         mutableIntStateOf(0)
     }
-
     var yOffset by remember {
         mutableIntStateOf(0)
     }
-
     val color = colorResource(id = R.color.gray)
 
     Box(modifier = Modifier.drawBehind {
@@ -132,26 +127,36 @@ fun PetProfile(pets: List<Pet>) {
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp)
         ) {
-            items(pets, key = { pet -> pet.petId }) {
-                Pet(pet = it)
+            items(selectedPets, key = { selectedPet -> selectedPet.pet.id }) {
+                Profile(selectedPet = it, onSelected = onSelected)
             }
         }
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Pet(pet: Pet) {
-    GlideImage(
-        model = pet.petImageUrl,
-        contentDescription = "diary image",
-        modifier = Modifier
-            .clip(CircleShape)
-            .width(78.dp)
-            .height(78.dp)
-            .aspectRatio(1f)
-    ) { builder ->
-        builder.centerCrop()
+fun Profile(selectedPet: SelectedPet, onSelected: (HomeAction) -> Unit) {
+    Box {
+        GlideImage(
+            imageModel = selectedPet.pet.imageUrl,
+            contentDescription = "diary image",
+            modifier = Modifier
+                .clip(CircleShape)
+                .width(78.dp)
+                .height(78.dp)
+                .clickable {
+                    onSelected(HomeAction.SelectPet(selectedPet = selectedPet))
+                },
+            contentScale = ContentScale.Crop
+        )
+
+        if (selectedPet.isSelected) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_check_white), contentDescription = null,
+                modifier = Modifier
+                    .background(colorResource(id = R.color.dim), shape = CircleShape)
+            )
+        }
     }
 }
 
@@ -160,7 +165,9 @@ fun TimeLine(
     diaries: List<Diary>,
     onNavigateToDetail: (String) -> Unit
 ) {
-    LazyColumn {
+    LazyColumn(
+        modifier = Modifier.padding(top = 10.dp)
+    ) {
         items(items = diaries, key = {
             it.id
         }) {
@@ -169,7 +176,6 @@ fun TimeLine(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun Diary(diary: Diary, onClick: (String) -> Unit) {
     val localDensity = LocalDensity.current
@@ -188,15 +194,14 @@ fun Diary(diary: Diary, onClick: (String) -> Unit) {
         Row(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.width(5.dp))
             GlideImage(
-                model = diary.pet?.petImageUrl ?: R.drawable.ic_add,
+                imageModel = diary.pet?.imageUrl ?: R.drawable.ic_add,
                 contentDescription = "profile image",
                 modifier = Modifier
                     .clip(CircleShape)
                     .width(48.dp)
                     .height(48.dp),
-            ) { builder ->
-                builder.centerCrop()
-            }
+                contentScale = ContentScale.Crop
+            )
             Spacer(modifier = Modifier.width(5.dp))
             Text(text = diary.date, modifier = Modifier.align(Alignment.CenterVertically))
         }

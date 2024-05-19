@@ -25,7 +25,7 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/iv_profile"
-                fullImage="@{data.pet.petImageUrl}"
+                fullImage="@{data.pet.imageUrl}"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_album_black"

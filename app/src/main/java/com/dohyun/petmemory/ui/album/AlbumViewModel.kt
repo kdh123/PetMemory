@@ -12,22 +12,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AlbumViewModel2 @Inject constructor(private val diaryRepository: DiaryRepository) : ViewModel() {
+class AlbumViewModel @Inject constructor(private val diaryRepository: DiaryRepository) : ViewModel() {
 
-    private val _albumUiState: MutableStateFlow<AlbumUiState> = MutableStateFlow(AlbumUiState.Loading)
-    val albumUiState = _albumUiState.asStateFlow()
+    private val _albumUiState: MutableStateFlow<AlbumUiState> = MutableStateFlow(AlbumUiState())
+    val albumUiState2 = _albumUiState.asStateFlow()
 
     init {
         viewModelScope.launch {
             _albumUiState.combine(diaryRepository.getAllDiary()) { state, diaries ->
-                when (state) {
-                    is AlbumUiState.Loading -> {
-                        AlbumUiState.Album(diaries = diaries)
-                    }
-                    is AlbumUiState.Album -> {
-                        state.copy(diaries = diaries)
-                    }
-                }
+                state.copy(diaries = diaries)
+
             }.catch {
 
             }.collect {

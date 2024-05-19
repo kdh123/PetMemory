@@ -23,5 +23,5 @@ interface PetDao {
     fun getPetInfo(petId: Int): PetEntity?
 
     @Update(entity = PetEntity::class)
-    fun updatePet(pet: Pet)
+    fun updatePet(petEntity: PetEntity)
 }

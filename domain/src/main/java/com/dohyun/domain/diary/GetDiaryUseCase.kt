@@ -49,15 +49,15 @@ class GetDiaryUseCase @Inject constructor(
     private suspend fun getPetDto(): Pet {
         return userRepository.run {
             Pet(
-                petBigType = getPetBigType(),
-                petType = getPetType(),
-                petName = getPetName(),
-                petAge = getPetAge(),
-                petBirthDay = getPetBirthDay(),
-                petSinceDay = getPetSince(),
-                petWeight = getPetWeight(),
-                petSex = getPetSex(),
-                petImageUrl = getPetImageUrl()
+                bigType = getPetBigType(),
+                type = getPetType(),
+                name = getPetName(),
+                age = getPetAge(),
+                birthDay = getPetBirthDay(),
+                sinceDay = getPetSince(),
+                weight = getPetWeight(),
+                sex = getPetSex(),
+                imageUrl = getPetImageUrl()
             )
         }
     }

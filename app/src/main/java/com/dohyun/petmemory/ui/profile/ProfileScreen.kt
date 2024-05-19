@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,9 +24,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -35,29 +43,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.dohyun.domain.pet.Pet
 import com.dohyun.petmemory.R
+import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
-    val profileUiState by viewModel.profileUiState.collectAsStateWithLifecycle()
+fun ProfileScreen(
+    viewModel: ProfileViewModel2 = hiltViewModel(),
+    onNavigateToEditScreen: (Int) -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val pets = uiState.pets + listOf(Pet())
 
-    ProfilesPager(uiState = profileUiState)
+    ProfilesPager(pets = pets, onNavigateToEditScreen = onNavigateToEditScreen)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProfilesPager(uiState: ProfileUiState) {
-    val profiles = if (uiState is ProfileUiState.Success) {
-        uiState.profiles
-    } else {
-        listOf()
-    }
-
+fun ProfilesPager(pets: List<Pet>, onNavigateToEditScreen: (Int) -> Unit) {
     val pagerState = rememberPagerState(pageCount = {
-        profiles.size
+        pets.size
     })
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -68,7 +73,7 @@ fun ProfilesPager(uiState: ProfileUiState) {
             pageSpacing = 10.dp
         ) { page ->
             // page content
-            Profile(profile = profiles[page])
+            Profile(pet = pets[page], onNavigateToEditScreen = onNavigateToEditScreen)
         }
 
         Menu(text = "의견 남기기", resId = R.drawable.ic_revise)
@@ -83,7 +88,6 @@ fun Menu(text: String, resId: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clickable { /*onClick()*/ }
             .padding(horizontal = 32.dp)
     ) {
         Image(
@@ -104,9 +108,19 @@ fun Menu(text: String, resId: Int) {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Profile(profile: Pet) {
+fun Profile(pet: Pet, onNavigateToEditScreen: (Int) -> Unit) {
+    val localDensity = LocalDensity.current
+    var height by remember {
+        mutableStateOf(0.dp)
+    }
+    val isEdit = pet.id != 0
+    val editAlpha = if (isEdit) {
+        1f
+    } else {
+        0f
+    }
+
     Box(
         modifier = Modifier
             .border(
@@ -115,40 +129,63 @@ fun Profile(profile: Pet) {
                 shape = RoundedCornerShape(10.dp),
             )
             .padding(10.dp)
+            .clickable {
+                onNavigateToEditScreen(pet.id)
+            }
+            .onGloballyPositioned {
+                with(localDensity) {
+                    height = it.size.height.toDp()
+                }
+            }
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
+        if (!isEdit) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_add_gray),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(18.dp)
+                    .width(72.dp)
+                    .height(72.dp)
+                    .align(Alignment.Center)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .alpha(editAlpha)
+        ) {
             Column(
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .padding(horizontal = 10.dp)
             ) {
                 GlideImage(
-                    model = profile.petImageUrl,
+                    imageModel = pet.imageUrl,
                     contentDescription = "profile image",
                     modifier = Modifier
                         .clip(CircleShape)
                         .width(76.dp)
                         .height(76.dp)
-                        .aspectRatio(1f)
-                ) { builder ->
-                    builder.centerCrop()
-                }
+                        .aspectRatio(1f),
+                    contentScale = ContentScale.Crop
+                )
                 Text(
-                    text = profile.petName,
+                    text = pet.name,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 7.dp),
                     fontSize = 18.sp,
                     fontFamily = FontFamily(Font(R.font.bmdohyun))
                 )
-                Text(text = profile.petType, modifier = Modifier.align(Alignment.CenterHorizontally))
+                Text(text = pet.type, modifier = Modifier.align(Alignment.CenterHorizontally))
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Column() {
+            Column {
                 Text(
-                    text = "${profile.petAge}",
+                    text = "${pet.age}",
                     fontFamily = FontFamily(Font(R.font.bmdohyun)),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -173,7 +210,7 @@ fun Profile(profile: Pet) {
                 )
 
                 Text(
-                    text = "${profile.petSex}",
+                    text = "${pet.sex}",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 10.dp),
@@ -197,7 +234,7 @@ fun Profile(profile: Pet) {
                 )
 
                 Text(
-                    text = profile.petBirthDay,
+                    text = pet.birthDay,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 10.dp),

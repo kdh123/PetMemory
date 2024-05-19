@@ -35,7 +35,7 @@
             tools:targetApi="29" />
 
         <activity
-            android:name=".ui.main.MainActivity2"
+            android:name=".ui.main.MainActivity"
             android:exported="false"
             android:label="@string/title_activity_main2"
             android:theme="@style/Theme.PetMemory" />
@@ -51,10 +51,10 @@
             android:value="${NAVER_MAP_API_KEY}" />
 
         <activity
-            android:name=".ui.diary.DiaryWriteActivity"
+            android:name=".ui.diary.write.DiaryWriteActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.diary.CameraActivity"
+            android:name=".ui.diary.write.CameraActivity"
             android:exported="false" />
         <activity
             android:name=".ui.splash.SplashActivity"

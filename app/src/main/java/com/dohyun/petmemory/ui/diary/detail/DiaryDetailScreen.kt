@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.diary
+package com.dohyun.petmemory.ui.diary.detail
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -48,9 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.dohyun.petmemory.R
+import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,21 +58,21 @@ fun DiaryDetailScreen(
     diaryId: String,
     onNavigateToWrite: () -> Unit,
     onDelete: () -> Unit,
-    diaryDetailViewModel: DiaryDetailViewModel = hiltViewModel()
+    viewModel: DiaryDetailViewModel = hiltViewModel()
 ) {
     val scope = rememberCoroutineScope()
-    val detailUiState by diaryDetailViewModel.uiState.collectAsStateWithLifecycle()
     val modalSheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
-    val diaryDetail = (detailUiState as? DiaryDetailUiState.Success)?.diary
     val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val diaryDetail = uiState.diary
 
     LaunchedEffect(true) {
-        diaryDetailViewModel.getDiary(diaryId = diaryId)
+        viewModel.onAction(action = DiaryDetailAction.Load(diaryId = diaryId))
     }
 
-    LaunchedEffect(true) {
-        diaryDetailViewModel.deleteFlow.collect {
+    LaunchedEffect(uiState.isCompleted) {
+        if (uiState.isCompleted) {
             onDelete()
         }
     }
@@ -94,7 +93,7 @@ fun DiaryDetailScreen(
 
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = diaryDetail?.title ?: "(제목 없음)",
+                        text = diaryDetail.title,
                         fontSize = 20.sp,
                         fontFamily = FontFamily(Font(R.font.bmdohyun_ttf)),
                         color = colorResource(id = R.color.black),
@@ -115,10 +114,7 @@ fun DiaryDetailScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            if (diaryDetail != null) {
-                DiaryPager(diary = diaryDetail)
-            }
-
+            DiaryPager(diary = diaryDetail)
             OptionModalBottomSheet(
                 diaryId = diaryId,
                 padding = innerPadding.calculateTopPadding(),
@@ -130,14 +126,15 @@ fun DiaryDetailScreen(
                         modalSheetState.hide()
                     }
                 },
-                onDelete = diaryDetailViewModel::deleteDiary,
+                onDelete = viewModel::onAction,
                 onBottomSheet = {
                     showBottomSheet = !showBottomSheet
                 })
         }
 
         Spacer(
-            Modifier.navigationBarsPadding())
+            Modifier.navigationBarsPadding()
+        )
 
     }
 }
@@ -151,7 +148,7 @@ fun OptionModalBottomSheet(
     showBottomSheet: Boolean,
     onBottomSheet: (Boolean) -> Unit,
     onEdit: () -> Unit,
-    onDelete: (String) -> Unit
+    onDelete: (DiaryDetailAction) -> Unit
 ) {
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -202,7 +199,7 @@ fun OptionModalBottomSheet(
                             .fillMaxWidth()
                             .padding(end = 10.dp)
                             .clickable {
-                                onDelete(diaryId)
+                                onDelete(DiaryDetailAction.Delete(diaryId = diaryId))
                             }
                     )
                 }
@@ -211,7 +208,7 @@ fun OptionModalBottomSheet(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalGlideComposeApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiaryPager(diary: DiaryDetail) {
     val images: List<String> = diary.imageUrl.filter { it.isNotEmpty() }
@@ -235,14 +232,12 @@ fun DiaryPager(diary: DiaryDetail) {
                 state = pagerState
             ) { page ->
                 GlideImage(
-                    model = images[page],
+                    imageModel = images[page],
                     contentDescription = "pet image",
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(0.8f)
-                ) { builder ->
-                    builder.centerCrop()
-                }
+                )
             }
             Text(
                 text = "$currentPage / ${images.size}",

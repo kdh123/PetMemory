@@ -14,7 +14,7 @@ import com.dohyun.petmemory.R
 import com.dohyun.petmemory.base.StateActivity
 import com.dohyun.petmemory.databinding.ActivityProfileBinding
 import com.dohyun.petmemory.extension.showToast
-import com.dohyun.petmemory.ui.main.MainActivity2
+import com.dohyun.petmemory.ui.main.MainActivity
 import com.dohyun.petmemory.ui.profile.ProfileDateBottomSheet.Companion.KEY_DATE_DATA
 import com.dohyun.petmemory.ui.profile.ProfileDateBottomSheet.Companion.KEY_DATE_TYPE
 import com.dohyun.petmemory.util.DateUtil
@@ -75,7 +75,7 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
         when (state) {
             is ProfileState.SuccessSave -> {
                 if (isProfileInit) {
-                    Intent(this, MainActivity2::class.java).run {
+                    Intent(this, MainActivity::class.java).run {
                         startActivity(this)
                     }
                     finish()
@@ -234,19 +234,19 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
                 }
 
                 var getPet = Pet(
-                    petBigType = petBigType,
-                    petType = etPetSort.text.toString(),
-                    petName = etPetName.text.toString(),
-                    petAge = thisYear - birthDayYear,
-                    petBirthDay = etBirthDay.text.toString(),
-                    petSinceDay = etSinceDay.text.toString(),
-                    petWeight = etWeight.text.toString().toDouble(),
-                    petSex = petSex,
-                    petImageUrl = petImageUrl
+                    bigType = petBigType,
+                    type = etPetSort.text.toString(),
+                    name = etPetName.text.toString(),
+                    age = thisYear - birthDayYear,
+                    birthDay = etBirthDay.text.toString(),
+                    sinceDay = etSinceDay.text.toString(),
+                    weight = etWeight.text.toString().toDouble(),
+                    sex = petSex,
+                    imageUrl = petImageUrl
                 )
 
                 if (pet != null) {
-                    getPet = getPet.copy(petId = pet!!.petId)
+                    getPet = getPet.copy(id = pet!!.id)
                 }
 
                 stateViewModel.saveProfile(pet = getPet, isUpdate = isProfileUpdate)
@@ -306,9 +306,9 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
         }
 
         pet?.let {
-            petImageUrl = it.petImageUrl
-            petBirthDay = DateUtil.getDateYearMonthDay(it.petBirthDay)
-            petSinceDay = DateUtil.getDateYearMonthDay(it.petSinceDay)
+            petImageUrl = it.imageUrl
+            petBirthDay = DateUtil.getDateYearMonthDay(it.birthDay)
+            petSinceDay = DateUtil.getDateYearMonthDay(it.sinceDay)
 
             setInfo(pet = it)
         }
@@ -317,23 +317,23 @@ class ProfileActivity(override val layoutId: Int = R.layout.activity_profile) : 
     private fun setInfo(pet: Pet) {
         with(binding) {
             pet.run {
-                etPetName.setText(petName)
-                etPetSort.setText(petType)
-                etPetName.setText(petName)
-                etBirthDay.setText(petBirthDay)
-                etSinceDay.setText(petSinceDay)
-                etWeight.setText(petWeight.toString())
+                etPetName.setText(name)
+                etPetSort.setText(type)
+                etPetName.setText(name)
+                etBirthDay.setText(birthDay)
+                etSinceDay.setText(sinceDay)
+                etWeight.setText(weight.toString())
 
-                spinnerPetType.setSelection(petBigType)
+                spinnerPetType.setSelection(bigType)
 
-                if (petSex == 0) {
+                if (sex == 0) {
                     cbMale.isChecked = true
                 } else {
                     cbFemale.isChecked = true
                 }
 
                 Glide.with(ivPetProfile)
-                    .load(petImageUrl)
+                    .load(imageUrl)
                     .circleCrop()
                     .into(ivPetProfile)
             }

@@ -1,13 +1,10 @@
 package com.dohyun.petmemory.ui.home
 
 import com.dohyun.domain.diary.Diary
-import com.dohyun.domain.pet.Pet
+import com.dohyun.petmemory.ui.diary.SelectedPet
 
-sealed interface HomeUiState {
-    object Loading : HomeUiState
-    data class Success(
-        val diaries: List<Diary>,
-        val pets: List<Pet>
-    ) : HomeUiState
-    data class Fail(val message: String?) : HomeUiState
-}
+data class HomeUiState(
+    val isLoading: Boolean = false,
+    val diaries: List<Diary> = listOf(),
+    val selectedPets: List<SelectedPet> = listOf()
+)

@@ -4,55 +4,65 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dohyun.domain.pet.Pet
 import com.dohyun.domain.pet.PetRepository
+import com.dohyun.domain.setting.SettingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileEditViewModel @Inject constructor(
-    private val petRepository: PetRepository
-): ViewModel() {
+    private val petRepository: PetRepository,
+    private val settingRepository: SettingRepository
+) : ViewModel() {
 
-    private val _profileDetailUiState: MutableStateFlow<ProfileEditUiState> = MutableStateFlow(ProfileEditUiState.Loading)
-    val profileDetailUiState = _profileDetailUiState.asStateFlow()
+    private val _uiState: MutableStateFlow<ProfileEditUiState2> = MutableStateFlow(ProfileEditUiState2())
+    val uiState = _uiState.asStateFlow()
 
-    private val pet: MutableStateFlow<Pet> = MutableStateFlow(Pet())
+    fun onAction(action: ProfileEditAction) {
+        when (action) {
+            is ProfileEditAction.Load -> {
+                getPetInfo(petId = action.petId)
+            }
 
-    init {
-        viewModelScope.launch {
-            _profileDetailUiState.combine(pet) { uiState, pet ->
-                when (uiState) {
-                    is ProfileEditUiState.Loading -> {
-                        ProfileEditUiState.Profile(pet = pet)
-                    }
-
-                    is ProfileEditUiState.Profile -> {
-                        uiState.copy(pet = pet)
-                    }
+            is ProfileEditAction.Edit -> {
+                if (action.isCompleted) {
+                    editPet(pet = action.pet, isEdit = true)
+                } else {
+                    _uiState.value = _uiState.value.copy(pet = action.pet)
                 }
-            }.catch {
+            }
 
-            }.collect {
-                _profileDetailUiState.value = it
+            is ProfileEditAction.Add -> {
+                editPet(pet = action.pet, isEdit = false)
             }
         }
     }
 
-    fun getProfile(petId: Int) {
+    private fun getPetInfo(petId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            petRepository.getPetInfo(petId = petId)?.let {
-                pet.value = it
-            }
+            val pet = petRepository.getPetInfo(petId = petId)
+            _uiState.value = _uiState.value.copy(pet = pet!!)
         }
     }
 
-    fun editProfile(pet: Pet) {
+    private fun editPet(pet: Pet, isEdit: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (isEdit) {
+                petRepository.updatePet(pet = pet)
+            } else {
+                petRepository.savePet(pet = pet)
+            }
 
+            settingRepository.run {
+                if (!getIsLogin()) {
+                    updateIsLogin(isLogin = true)
+                }
+            }
+
+            _uiState.value = _uiState.value.copy(isCompleted = true)
+        }
     }
-
 }

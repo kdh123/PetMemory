@@ -16,6 +16,11 @@ object DateUtil {
         return SimpleDateFormat(pattern, Locale.getDefault()).format(date)
     }
 
+    fun convertMillisToDate(millis: Long): String {
+        val formatter = SimpleDateFormat("yyyy-MM-dd")
+        return formatter.format(Date(millis))
+    }
+
     @SuppressLint("SimpleDateFormat")
     fun getDateYearMonthDay(
         strDate: String,

@@ -37,8 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.dohyun.domain.diary.Diary
 import com.dohyun.petmemory.R
 import com.dohyun.petmemory.util.LocationUtil
@@ -53,6 +51,7 @@ import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
 import com.naver.maps.map.overlay.OverlayImage
+import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun MapScreen(
@@ -144,7 +143,6 @@ fun Map(diaries: List<Diary>, onNavigateToDetail: (String) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MapCard(diary: Diary, onNavigateToDetail: (String) -> Unit) {
     val locationUtil = LocationUtil(LocalContext.current)
@@ -158,7 +156,7 @@ fun MapCard(diary: Diary, onNavigateToDetail: (String) -> Unit) {
             }
     ) {
         GlideImage(
-            model = diary.imageUrl[0],
+            imageModel = diary.imageUrl[0],
             contentDescription = null,
             modifier = Modifier
                 .aspectRatio(1f),

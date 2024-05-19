@@ -20,9 +20,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -44,18 +42,18 @@ import androidx.navigation.navigation
 import com.dohyun.petmemory.R
 import com.dohyun.petmemory.map.MapScreen
 import com.dohyun.petmemory.ui.album.AlbumScreen
-import com.dohyun.petmemory.ui.diary.CameraActivity
-import com.dohyun.petmemory.ui.diary.DiaryDetailScreen
-import com.dohyun.petmemory.ui.diary.DiaryDetailUiState
-import com.dohyun.petmemory.ui.diary.DiaryDetailViewModel
-import com.dohyun.petmemory.ui.diary.DiaryWriteScreen
+import com.dohyun.petmemory.ui.diary.write.CameraActivity
+import com.dohyun.petmemory.ui.diary.detail.DiaryDetailScreen
+import com.dohyun.petmemory.ui.diary.detail.DiaryDetailViewModel
+import com.dohyun.petmemory.ui.diary.write.DiaryWriteScreen
 import com.dohyun.petmemory.ui.home.HomeScreen
-import com.dohyun.petmemory.ui.home.HomeViewModel2
+import com.dohyun.petmemory.ui.home.HomeViewModel
+import com.dohyun.petmemory.ui.profile.ProfileEditScreen
 import com.dohyun.petmemory.ui.profile.ProfileScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity2 : ComponentActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,12 +66,9 @@ class MainActivity2 : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val homeViewModel: HomeViewModel2 = hiltViewModel()
+    val homeViewModel: HomeViewModel = hiltViewModel()
     val items = listOf(Screen.Home, Screen.Map, Screen.Camera, Screen.Profile)
-    val isShow = navController.currentBackStackEntryAsState().value?.destination?.route in listOf("home", "map", "profile")
-    var showBottomSheet by remember {
-        mutableStateOf(true)
-    }
+    val isBottomNavShow = navController.currentBackStackEntryAsState().value?.destination?.route in listOf("home", "map", "profile")
     val context = LocalContext.current
     val onCameraClick = {
         context.startActivity(Intent(context, CameraActivity::class.java))
@@ -84,7 +79,13 @@ fun MainScreen() {
             composable("home") {
                 val onNavigateToDetail: (String) -> Unit = remember {
                     { diaryId ->
-                        navController.navigate("diaryDetail/$diaryId")
+                        navController.navigate("diaryDetail/$diaryId") {
+                            popUpTo("home") {
+                                inclusive = false
+                            }
+                            restoreState = true
+                            launchSingleTop = true
+                        }
                     }
                 }
                 val onNavigateToAlbum: () -> Unit = remember {
@@ -129,7 +130,25 @@ fun MainScreen() {
                 )
             }
             composable("profile") {
-                ProfileScreen()
+                val onNavigateToEdit: (Int) -> Unit = remember {
+                    {
+                        navController.navigate("profileEdit/$it") {
+                            restoreState = true
+                        }
+                    }
+                }
+                ProfileScreen(onNavigateToEditScreen = onNavigateToEdit)
+            }
+            composable("profileEdit/{petId}") { backStackEntry ->
+                val onCompleted = remember {
+                    {
+                        navController.popBackStack()
+                    }
+                }
+                val petId = backStackEntry.arguments?.getString("petId") ?: "-1"
+                ProfileEditScreen(petId = petId.toInt()) {
+                    onCompleted()
+                }
             }
             composable("diaryWrite") {
                 val onFinish = remember {
@@ -148,25 +167,20 @@ fun MainScreen() {
             ) {
                 composable("diaryDetail/{diaryId}") { backStackEntry ->
                     val viewModel = backStackEntry.sharedViewModel<DiaryDetailViewModel>(navController = navController)
-                    val onDelete: () -> Unit = remember {
-                        {
-                            navController.popBackStack()
-                        }
-                    }
 
                     DiaryDetailScreen(
                         diaryId = backStackEntry.arguments?.getString("diaryId") ?: "",
-                        diaryDetailViewModel = viewModel,
+                        viewModel = viewModel,
                         onNavigateToWrite = {
                             navController.navigate("diaryEdit")
                         },
-                        onDelete = onDelete
+                        onDelete = { navController.popBackStack() }
                     )
                 }
                 composable("diaryEdit") { backStackEntry ->
                     val viewModel = backStackEntry.sharedViewModel<DiaryDetailViewModel>(navController = navController)
                     val diaryDetailUiState by viewModel.uiState.collectAsStateWithLifecycle()
-                    val diary = (diaryDetailUiState as? DiaryDetailUiState.Success)?.diary
+                    val diary = diaryDetailUiState.diary
 
                     DiaryWriteScreen(
                         onFinish = { data ->
@@ -185,7 +199,7 @@ fun MainScreen() {
         }
 
         AnimatedVisibility(
-            visible = isShow,
+            visible = isBottomNavShow,
             enter = fadeIn() + slideIn { IntOffset(0, it.height) },
             exit = fadeOut() + slideOut { IntOffset(0, it.height) }
         ) {

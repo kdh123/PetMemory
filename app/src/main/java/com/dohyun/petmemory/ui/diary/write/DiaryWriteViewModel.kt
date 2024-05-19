@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.diary
+package com.dohyun.petmemory.ui.diary.write
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.dohyun.domain.diary.Diary
 import com.dohyun.domain.diary.SaveDiaryUseCase
 import com.dohyun.domain.diary.EditDiaryUseCase
-import com.dohyun.domain.pet.Pet
 import com.dohyun.domain.pet.PetRepository
+import com.dohyun.petmemory.ui.diary.SelectedPet
 import com.dohyun.petmemory.util.DateUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -120,24 +120,19 @@ class DiaryWriteViewModel @Inject constructor(
                 .pets
                 .filter { it.isSelected }[0]
                 .pet
-            val diary = state.diary?.copy(
+            val diary = state.diary.copy(
                 title = title,
                 content = content,
                 pet = selectedPet
             )
 
             if (isEdit) {
-                editDiaryUseCase(diary = diary!!)
+                editDiaryUseCase(diary = diary)
             } else {
-                saveDiaryUseCase(diary = diary!!)
+                saveDiaryUseCase(diary = diary)
             }
 
             _uiState.value = state.copy(isCompleted = true)
         }
     }
 }
-
-data class SelectedPet(
-    val pet: Pet,
-    val isSelected: Boolean
-)

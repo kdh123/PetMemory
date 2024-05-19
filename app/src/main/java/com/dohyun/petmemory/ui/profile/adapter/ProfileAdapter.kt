@@ -18,7 +18,7 @@ class ProfileAdapter(
     companion object {
         private val diffUtil = object : DiffUtil.ItemCallback<Pet>() {
             override fun areItemsTheSame(oldItem: Pet, newItem: Pet): Boolean {
-                return oldItem.petId == newItem.petId
+                return oldItem.id == newItem.id
             }
 
             override fun areContentsTheSame(oldItem: Pet, newItem: Pet): Boolean {

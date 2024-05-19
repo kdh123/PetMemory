@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.diary
+package com.dohyun.petmemory.ui.diary.write
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -96,6 +96,22 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
             R.anim.anim_slide_none,
             R.anim.anim_slide_down_exit
         )
+    }
+
+    override fun onStop() {
+        if (loadingDialog.isAdded) {
+            loadingDialog.dismissAllowingStateLoss()
+        }
+
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        if (loadingDialog.isAdded) {
+            loadingDialog.dismissAllowingStateLoss()
+        }
+
+        super.onDestroy()
     }
 
     override fun initView() {

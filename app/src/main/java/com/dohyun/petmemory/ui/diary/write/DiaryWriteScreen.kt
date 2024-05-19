@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.diary
+package com.dohyun.petmemory.ui.diary.write
 
 import android.content.Intent
 import android.net.Uri
@@ -40,14 +40,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.dohyun.domain.diary.Diary
 import com.dohyun.petmemory.R
+import com.dohyun.petmemory.ui.diary.detail.DiaryDetail
+import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -94,9 +96,10 @@ fun DiaryWriteScreen(
         viewModel.onAction(action = DiaryWriteAction.Edit(diary = diaryDetail?.toDiary()))
     }
 
-    if (uiState.isCompleted) {
-        onFinish(uiState.diary)
-        return
+    LaunchedEffect(uiState.isCompleted) {
+        if (uiState.isCompleted) {
+            onFinish(uiState.diary)
+        }
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -164,7 +167,7 @@ fun AppBar(onSaveClick: () -> Unit) {
                     strokeWidth = 5f
                 )
             }
-            .padding(10.dp),
+            .padding(horizontal = 10.dp, vertical = 18.dp)
 
         ) {
         Image(
@@ -173,7 +176,12 @@ fun AppBar(onSaveClick: () -> Unit) {
         )
 
         Box(modifier = Modifier.weight(1f)) {
-            Text(text = "추억 쌓기", fontSize = 18.sp, modifier = Modifier.align(Alignment.Center))
+            Text(
+                text = "추억 쌓기",
+                fontSize = 18.sp,
+                fontFamily = FontFamily(Font(R.font.bmdohyun_ttf)),
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
 
         Image(
@@ -222,11 +230,10 @@ fun PetImages(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun PetImage(path: Any, modifier: Modifier = Modifier, onClick: () -> Unit) {
     GlideImage(
-        model = path,
+        imageModel = path,
         contentDescription = "pet image",
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
@@ -235,16 +242,13 @@ fun PetImage(path: Any, modifier: Modifier = Modifier, onClick: () -> Unit) {
             .clickable {
                 onClick()
             }
-    ) { builder ->
-        builder.centerCrop()
-    }
+    )
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProfileImage(path: Any, modifier: Modifier = Modifier, onCLick: () -> Unit) {
     GlideImage(
-        model = path,
+        imageModel = path,
         contentDescription = "profile image",
         modifier = modifier
             .clip(CircleShape)
@@ -253,9 +257,7 @@ fun ProfileImage(path: Any, modifier: Modifier = Modifier, onCLick: () -> Unit) 
             .clickable {
                 onCLick()
             }
-    ) { builder ->
-        builder.centerCrop()
-    }
+    )
 }
 
 @Composable
@@ -265,7 +267,7 @@ fun Profiles(uiState: DiaryWriteUiState, onClick: (Int) -> Unit) {
             if (profile.isSelected) {
                 Box {
                     ProfileImage(
-                        path = profile.pet.petImageUrl,
+                        path = profile.pet.imageUrl,
                         onCLick = {
                         }
                     )
@@ -279,7 +281,7 @@ fun Profiles(uiState: DiaryWriteUiState, onClick: (Int) -> Unit) {
                 }
             } else {
                 ProfileImage(
-                    path = profile.pet.petImageUrl,
+                    path = profile.pet.imageUrl,
                     onCLick = {
                         onClick(index)
                     }

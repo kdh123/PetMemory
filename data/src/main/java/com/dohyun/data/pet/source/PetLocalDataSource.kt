@@ -21,16 +21,16 @@ class PetLocalDataSource @Inject constructor(private val db: AppDatabase) : PetD
     override suspend fun savePet(pet: Pet) {
         val entity = pet.run {
             PetEntity(
-                petId,
-                petBigType,
-                petType,
-                petName,
-                petAge,
-                petBirthDay,
-                petSinceDay,
-                petWeight,
-                petSex,
-                petImageUrl
+                id,
+                bigType,
+                type,
+                name,
+                age,
+                birthDay,
+                sinceDay,
+                weight,
+                sex,
+                imageUrl
             )
         }
 
@@ -42,6 +42,20 @@ class PetLocalDataSource @Inject constructor(private val db: AppDatabase) : PetD
     }
 
     override suspend fun updatePet(pet: Pet) {
-        petService.updatePet(pet = pet)
+        val entity = pet.run {
+            PetEntity(
+                id,
+                bigType,
+                type,
+                name,
+                age,
+                birthDay,
+                sinceDay,
+                weight,
+                sex,
+                imageUrl
+            )
+        }
+        petService.updatePet(petEntity = entity)
     }
 }

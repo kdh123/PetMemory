@@ -1,4 +1,4 @@
-package com.dohyun.petmemory.ui.diary
+package com.dohyun.petmemory.ui.diary.write
 
 import android.Manifest
 import android.content.Intent
@@ -10,6 +10,7 @@ import com.dohyun.domain.diary.Diary
 import com.dohyun.petmemory.R
 import com.dohyun.petmemory.base.BaseActivity
 import com.dohyun.petmemory.databinding.ActivityDiaryWriteBinding
+import com.dohyun.petmemory.ui.diary.detail.DiaryDetail
 import com.dohyun.petmemory.util.LocationUtil
 import com.dohyun.petmemory.util.MediaUtil
 import com.gun0912.tedpermission.PermissionListener

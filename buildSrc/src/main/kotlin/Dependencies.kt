@@ -17,6 +17,7 @@ object Dependencies {
     const val composeHilt = "androidx.hilt:hilt-navigation-compose:${Versions.composeHilt}"
     const val composeNavigation = "androidx.navigation:navigation-compose:${Versions.composeNavigation}"
     const val composeGlide = "com.github.bumptech.glide:compose:${Versions.composeGlide}"
+    const val composeGlide2 = "com.github.skydoves:landscapist-glide:1.4.7"
 
     const val naverMap = "com.naver.maps:map-sdk:${Versions.naverMap}"
     const val naverMapLocation = "io.github.fornewid:naver-map-location:${Versions.naverMapLocation}"
@@ -80,7 +81,8 @@ fun DependencyHandler.compose() {
     implementaion("${Dependencies.composeFlowState}")
     implementaion("${Dependencies.composeHilt}")
     implementaion("${Dependencies.composeNavigation}")
-    implementaion("${Dependencies.composeGlide}")
+    //implementaion("${Dependencies.composeGlide}")
+    implementaion("${Dependencies.composeGlide2}")
 
     androidTestImplementation(platform("${Dependencies.composeBom}"))
     androidTestImplementation("${Dependencies.composeUITest}")

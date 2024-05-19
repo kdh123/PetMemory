@@ -26,16 +26,16 @@ data class PetEntity(
         val birthYear = petBirthDay.substring(0, 4).toInt()
 
         return Pet(
-            petId = petId,
-            petBigType = petBigType,
-            petType = petType,
-            petName = petName,
-            petBirthDay = petBirthDay,
-            petSinceDay = petSinceDay,
-            petWeight = petWeight,
-            petSex = petSex,
-            petImageUrl = petImageUrl,
-            petAge = thisYear - birthYear
+            id = petId,
+            bigType = petBigType,
+            type = petType,
+            name = petName,
+            birthDay = petBirthDay,
+            sinceDay = petSinceDay,
+            weight = petWeight,
+            sex = petSex,
+            imageUrl = petImageUrl,
+            age = thisYear - birthYear
         )
     }
 

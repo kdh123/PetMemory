@@ -9,8 +9,8 @@ import javax.inject.Inject
 
 class LocationUtil @Inject constructor(@ApplicationContext private val context: Context) {
 
-    fun getAddress(lat: Double, lng: Double): String {
-        if (lat == 0.0 || lng == 0.0) {
+    fun getAddress(lat: Double?, lng: Double?): String {
+        if (lat == null || lng == null) {
             return "알 수 없음"
         }
 

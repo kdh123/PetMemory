@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,20 +30,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.dohyun.domain.diary.Diary
 import com.dohyun.petmemory.R
+import com.skydoves.landscapist.glide.GlideImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlbumScreen(
     onNavigateToDetail: (String) -> Unit,
     onNavigateToWrite: () -> Unit,
-    albumViewModel: AlbumViewModel2 = hiltViewModel()
+    viewModel: AlbumViewModel = hiltViewModel()
 ) {
-    val uiState by albumViewModel.albumUiState.collectAsStateWithLifecycle()
-    val diaries = (uiState as? AlbumUiState.Album)?.diaries ?: listOf()
+    val uiState by viewModel.albumUiState2.collectAsStateWithLifecycle()
+    val diaries = uiState.diaries
 
     Scaffold(
         topBar = {
@@ -105,7 +104,7 @@ fun AlbumContent(
 fun AlbumContentPreview() {
     val list = mutableListOf<Diary>()
 
-    for (i in 0..100) {
+    for (i in 0..7) {
         list.add(
             Diary(
                 id = "$i",
@@ -123,21 +122,17 @@ fun AlbumContentPreview() {
 
 @Composable
 fun AlbumGrid(diaries: List<Diary>, onNavigateToDetail: (String) -> Unit) {
-    LazyVerticalStaggeredGrid(
-        contentPadding = PaddingValues(horizontal = 4.dp),
-        columns = StaggeredGridCells.Fixed(3),
-        verticalItemSpacing = 4.dp,
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        contentPadding = PaddingValues(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        content = {
-            items(items = diaries,
-                key = {
-                    it.id
-                }) {
-                Diary(it, onNavigateToDetail)
-            }
-        },
         modifier = Modifier.fillMaxSize()
-    )
+    ) {
+        items(items = diaries, key = { it.id }) {
+            Diary(it, onNavigateToDetail)
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -145,10 +140,10 @@ fun AlbumGrid(diaries: List<Diary>, onNavigateToDetail: (String) -> Unit) {
 fun AlbumGridPreview() {
     val list = mutableListOf<Diary>()
 
-    for (i in 0..100) {
+    for (i in 1..8) {
         list.add(
             Diary(
-                id = "$i",
+                id = "dummy $i",
                 date = "hi",
                 imageUrl = listOf(""),
                 lat = null,
@@ -162,17 +157,18 @@ fun AlbumGridPreview() {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun Diary(diary: Diary, onNavigateToDetail: (String) -> Unit) {
     GlideImage(
-        model = diary.imageUrl[0],
+        imageModel = diary.imageUrl[0],
         contentDescription = null,
         modifier = Modifier
             .aspectRatio(1f)
             .clickable {
-                onNavigateToDetail(diary.id)
+                if (diary.imageUrl[0].isNotEmpty()) {
+                    onNavigateToDetail(diary.id)
+                }
             },
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Crop
     )
 }
