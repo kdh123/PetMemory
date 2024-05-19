@@ -2,6 +2,7 @@ package com.dohyun.petmemory.ui.profile.edit
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,6 +60,7 @@ import com.dohyun.domain.pet.Pet
 import com.dohyun.petmemory.R
 import com.dohyun.petmemory.util.DateUtil
 import com.skydoves.landscapist.glide.GlideImage
+import kotlinx.coroutines.flow.catch
 
 enum class DateType {
     BirthDay, SinceDay
@@ -105,6 +107,17 @@ fun ProfileEditScreen(
         if (isEdit) {
             viewModel.onAction(action = ProfileEditAction.Load(petId = petId))
         }
+    }
+
+    LaunchedEffect(true) {
+        viewModel.sideEffect
+            .collect {
+                when (it) {
+                    is ProfileEditSideEffect.Message -> {
+                        Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
     }
 
     if (showBirthDayCalender) {

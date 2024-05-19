@@ -61,8 +61,6 @@ class HomeViewModel @Inject constructor(
 
                     _homeUiState.value.copy(diaries = currentDiaries, selectedPets = selectedPets)
                 }.catch {
-                    val a = it
-                    val b = ""
                 }.collectLatest {
                     _homeUiState.value = it
                 }
