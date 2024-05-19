@@ -43,9 +43,6 @@
             android:name=".ui.guide.GuideActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.profile.ProfileActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.profile.ProfileSetActivity"
             android:exported="false" />
 
