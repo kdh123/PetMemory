@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 val properties = Properties().apply {
@@ -14,16 +15,20 @@ val properties = Properties().apply {
 
 android {
     namespace = "com.dohyun.petmemory"
-    compileSdk = 33
+    compileSdk = 34
 
     dataBinding {
         enable = true
     }
 
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
+
     defaultConfig {
         applicationId = "com.dohyun.petmemory"
         minSdk = 23
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 14
         versionName = "1.0.2"
 
@@ -43,6 +48,16 @@ android {
             manifestPlaceholders["NAVER_MAP_API_KEY"] = properties["NAVER_MAP_API_KEY"] as String
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+        }
+        /*create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+        }*/
     }
 
     compileOptions {
@@ -69,7 +84,8 @@ android {
 dependencies {
     domainModule()
     dataModule()
-    
+
+    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.core:core-ktx:1.8.0")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
@@ -78,7 +94,7 @@ dependencies {
 
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
-    implementation("com.google.android.gms:play-services-location:19.0.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("junit:junit:4.12")
@@ -88,10 +104,13 @@ dependencies {
 
     implementation("io.github.ParkSangGwon:tedpermission-normal:3.3.0")
 
+    implementation("androidx.activity:activity:1.8.2")
     implementation("androidx.activity:activity-ktx:1.7.2")
     implementation("androidx.fragment:fragment-ktx:1.6.0")
 
     compose()
+
+    naverMap()
 
     hilt()
 
@@ -104,10 +123,9 @@ dependencies {
     // Swipe Refresh Layout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
-    // 네이버 지도 SDK
-    implementation("com.naver.maps:map-sdk:3.16.0")
-
     implementation("com.google.android.material:material:1.9.0")
+
+    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
 
     testCode()
 }

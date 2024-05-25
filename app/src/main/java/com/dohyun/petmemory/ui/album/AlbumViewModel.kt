@@ -1,73 +1,31 @@
 package com.dohyun.petmemory.ui.album
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dohyun.domain.diary.DiaryData
-import com.dohyun.domain.diary.GetDiaryUseCase
-import com.dohyun.petmemory.base.StateViewModel
-import com.dohyun.petmemory.extension.handle
-import com.dohyun.petmemory.ui.diary.DiaryEvent
+import com.dohyun.domain.diary.DiaryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AlbumViewModel @Inject constructor(
-    private val getDiaryUseCase: GetDiaryUseCase
-) : StateViewModel<AlbumState>(AlbumState.None) {
+class AlbumViewModel @Inject constructor(private val diaryRepository: DiaryRepository) : ViewModel() {
 
-    var currentDiaryList = listOf<DiaryData>()
+    private val _albumUiState: MutableStateFlow<AlbumUiState> = MutableStateFlow(AlbumUiState())
+    val albumUiState2 = _albumUiState.asStateFlow()
 
-    private var currentStartIndex = 0
-    private var currentOffset = 18
+    init {
+        viewModelScope.launch {
+            _albumUiState.combine(diaryRepository.getAllDiary()) { state, diaries ->
+                state.copy(diaries = diaries)
 
-    fun getDiary(isPaging: Boolean = false) {
-        _state.value = AlbumState.Loading
+            }.catch {
 
-        viewModelScope.handle(
-            dispatcher = Dispatchers.IO,
-            block = {
-                getDiaryUseCase(
-                    currentDiaryListSize = currentDiaryList.size,
-                    currentIndex = currentStartIndex,
-                    offset = currentOffset,
-                    isPaging = isPaging
-                )?.run {
-                    currentStartIndex = indexAndOffset.index
-                    currentOffset = indexAndOffset.offset
-                    currentDiaryList = currentDiaryList + diaryList
-
-                    val isLoadMore = currentDiaryList.size >= currentOffset
-
-                    _state.value = AlbumState.Load(diaryList = currentDiaryList, isLoadMore = isLoadMore)
-                } ?: kotlin.run {
-                    _state.value = AlbumState.Load(diaryList = currentDiaryList, isLoadMore = false)
-                }
-            })
-    }
-
-    fun commitSync(diaryEvent: DiaryEvent, diaryData: DiaryData) {
-        _state.value = AlbumState.Loading
-
-        when (diaryEvent) {
-            DiaryEvent.Edit -> {
-                currentDiaryList = currentDiaryList.map {
-                    if (it.id == diaryData.id) {
-                        diaryData.copy()
-                    } else {
-                        it.copy()
-                    }
-                }
-            }
-
-            DiaryEvent.Save -> {
-                currentDiaryList = listOf(diaryData) + currentDiaryList.map { it.copy() }
-            }
-
-            DiaryEvent.Delete -> {
-                currentDiaryList = currentDiaryList.filter { it.id != diaryData.id }
-            }
-
-            else -> {
+            }.collect {
+                _albumUiState.value = it
             }
         }
     }

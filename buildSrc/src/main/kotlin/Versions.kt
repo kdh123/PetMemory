@@ -5,7 +5,7 @@ object Versions {
     const val composeFlowState = "2.6.0-beta01"
     const val composeHilt = "1.0.0"
     const val composeNavigation = "2.5.3"
-    const val composeGlide = "1.0.0-alpha.3"
+    const val composeGlide = "1.0.0-beta01"
     const val googleMaterial = "1.9.0"
     const val recyclerView = "1.2.1"
     const val googleGmsLocation = "19.0.1"
@@ -19,6 +19,8 @@ object Versions {
     const val glide = "4.15.1"
     const val swipeRefreshLayout = "1.1.0"
     const val naverMap = "3.16.0"
+    const val naverMapLocation = "21.0.1"
+    const val naverMapCompose = "1.4.1"
 
     const val compileSdk = 33
     const val targetSdk = 33

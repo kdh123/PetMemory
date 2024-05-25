@@ -96,11 +96,11 @@ class UserRepositoryImpl(
         userLocalDataSource.updatePetImageUrl(imageUrl)
     }
 
-    override suspend fun getPetWeight(): Double {
+    override suspend fun getPetWeight(): String {
         return userLocalDataSource.getPetWeight()
     }
 
-    override suspend fun updatePetWeight(weight: Double) {
+    override suspend fun updatePetWeight(weight: String) {
         userLocalDataSource.updatePetWeight(weight)
     }
 }

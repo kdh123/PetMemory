@@ -163,13 +163,13 @@ class UserLocalDataSource(private val dataStore: DataStore<User.UserInfoData>) :
         }
     }
 
-    override suspend fun getPetWeight(): Double {
+    override suspend fun getPetWeight(): String {
         return dataStore.data.map { user ->
             user.petWeight
         }.first()
     }
 
-    override suspend fun updatePetWeight(weight: Double) {
+    override suspend fun updatePetWeight(weight: String) {
         dataStore.updateData { currentSettings ->
             currentSettings.toBuilder()
                 .setPetWeight(weight)

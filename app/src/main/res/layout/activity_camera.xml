@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white"
-        tools:context=".ui.diary.CameraActivity">
+        tools:context=".ui.diary.write.CameraActivity">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_title"
@@ -146,23 +146,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_select_bottom"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:translationZ="10dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cl_title">
-
-            <include
-                android:id="@+id/l_select_bottom"
-                layout="@layout/layout_camera_bottom_select" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

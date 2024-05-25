@@ -1,9 +1,11 @@
 package com.dohyun.domain.pet
 
+import kotlinx.coroutines.flow.Flow
+
 interface PetRepository {
-    suspend fun getAllPet(): List<PetDto>
-    suspend fun getPetInfo(petId: Int): PetDto?
-    suspend fun savePet(petDto: PetDto)
+    suspend fun getAllPet(): Flow<List<Pet>>
+    suspend fun getPetInfo(petId: Int): Pet?
+    suspend fun savePet(pet: Pet)
     suspend fun deletePet(petId: Int)
-    suspend fun updatePet(petDto: PetDto)
+    suspend fun updatePet(pet: Pet)
 }

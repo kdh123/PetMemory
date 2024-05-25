@@ -4,4 +4,5 @@
     <string name="guide_catuion">앱을 삭제하면 모든 정보가 삭제되니 이 점 꼭 유의해주시길 바랍니다. (단, 사진은 디바이스 앨범에 그대로 남아있습니다.)</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main2">MainActivity2</string>
 </resources>

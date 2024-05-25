@@ -5,7 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.dohyun.domain.diary.DiaryData
+import com.dohyun.domain.diary.Diary
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DiaryDao {
@@ -16,7 +17,7 @@ interface DiaryDao {
     fun deleteDiary(diaryId: String)
 
     @Query("SELECT * FROM diary")
-    fun getAllDiary(): List<DiaryEntity>?
+    fun getAllDiary(): Flow<List<DiaryEntity>?>
 
     @Query("SELECT * FROM diary LIMIT :offset OFFSET :startIndex")
     fun getDiary(startIndex: Int, offset: Int): List<DiaryEntity>?
@@ -37,5 +38,5 @@ interface DiaryDao {
     fun getLocationDiaryCount(): Int
 
     @Update(entity = DiaryEntity::class)
-    fun updateDiary(diaryData: DiaryData)
+    fun updateDiary(diary: Diary)
 }

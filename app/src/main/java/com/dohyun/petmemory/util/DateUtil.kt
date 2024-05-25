@@ -1,7 +1,7 @@
 package com.dohyun.petmemory.util
 
 import android.annotation.SuppressLint
-import com.dohyun.petmemory.ui.profile.ProfileActivity
+import com.dohyun.petmemory.ui.profile.DateResult
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -16,25 +16,30 @@ object DateUtil {
         return SimpleDateFormat(pattern, Locale.getDefault()).format(date)
     }
 
+    fun convertMillisToDate(millis: Long): String {
+        val formatter = SimpleDateFormat("yyyy-MM-dd")
+        return formatter.format(Date(millis))
+    }
+
     @SuppressLint("SimpleDateFormat")
     fun getDateYearMonthDay(
         strDate: String,
         pattern: String = "yyyy-MM-dd"
-    ): ProfileActivity.DateDto {
+    ): com.dohyun.petmemory.ui.profile.DateResult {
         val year: Int
         val month: Int
         val day: Int
         return try {
             val sdf = SimpleDateFormat(pattern)
-            val date: Date = sdf.parse(strDate) as Date
+            val dateResult: Date = sdf.parse(strDate) as Date
             val cal: Calendar = Calendar.getInstance()
-            cal.time = date
+            cal.time = dateResult
             year = cal.get(Calendar.YEAR)
             month = (cal.get(Calendar.MONTH) + 1) % 12
             day = cal.get(Calendar.DATE)
-            ProfileActivity.DateDto(year, month, day)
+            DateResult(year, month, day)
         } catch (e: Exception) {
-            ProfileActivity.DateDto()
+            DateResult()
         }
     }
 

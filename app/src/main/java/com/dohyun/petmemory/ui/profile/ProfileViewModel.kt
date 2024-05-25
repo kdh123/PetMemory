@@ -1,48 +1,31 @@
 package com.dohyun.petmemory.ui.profile
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dohyun.domain.pet.PetDto
 import com.dohyun.domain.pet.PetRepository
-import com.dohyun.domain.setting.SettingRepository
-import com.dohyun.petmemory.base.StateViewModel
-import com.dohyun.petmemory.extension.handle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val petRepository: PetRepository,
-    private val settingRepository: SettingRepository
-) : StateViewModel<ProfileState>(ProfileState.None) {
+    private val petRepository: PetRepository
+) : ViewModel() {
 
-    fun getProfile() {
-        viewModelScope.handle(
-            dispatcher = Dispatchers.IO,
-            block = {
-                val petList = petRepository.getAllPet().reversed()
+    private val _uiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(ProfileUiState())
+    val uiState = _uiState.asStateFlow()
 
-                _state.value = ProfileState.SuccessLoad(petList = petList)
-            })
-    }
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            petRepository.getAllPet().catch {
 
-    fun saveProfile(petDto: PetDto, isUpdate: Boolean) {
-        viewModelScope.handle(
-            dispatcher = Dispatchers.IO,
-            block = {
-                if (isUpdate) {
-                    petRepository.updatePet(petDto = petDto)
-                } else {
-                    petRepository.savePet(petDto = petDto)
-                }
-
-                settingRepository.run {
-                    if (!getIsLogin()) {
-                        updateIsLogin(isLogin = true)
-                    }
-                }
-
-                _state.value = ProfileState.SuccessSave(petDto = petDto)
-            })
+            }.collect {
+                _uiState.value = _uiState.value.copy(pets = it)
+            }
+        }
     }
 }

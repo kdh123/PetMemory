@@ -1,7 +1,7 @@
 package com.dohyun.data.room
 
 import androidx.room.TypeConverter
-import com.dohyun.domain.pet.PetDto
+import com.dohyun.domain.pet.Pet
 import com.google.gson.Gson
 
 class RoomConverter {
@@ -16,14 +16,14 @@ class RoomConverter {
     }
 
     @TypeConverter
-    fun petDtoToJson(value: PetDto?): String? {
+    fun petToJson(value: Pet?): String? {
         return Gson().toJson(value)
     }
 
     @TypeConverter
-    fun jsonToPetDto(value: String?): PetDto? {
+    fun jsonToPet(value: String?): Pet? {
         return if (value != null) {
-            Gson().fromJson(value, PetDto::class.java)
+            Gson().fromJson(value, Pet::class.java)
         } else {
             null
         }
