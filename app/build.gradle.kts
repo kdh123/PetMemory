@@ -29,8 +29,8 @@ android {
         applicationId = "com.dohyun.petmemory"
         minSdk = 23
         targetSdk = 34
-        versionCode = 14
-        versionName = "1.0.2"
+        versionCode = 16
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

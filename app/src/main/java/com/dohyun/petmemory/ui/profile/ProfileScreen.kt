@@ -227,7 +227,11 @@ fun Profile(pet: Pet, onNavigateToEditScreen: (Int) -> Unit) {
                 )
 
                 Text(
-                    text = "${pet.sex}",
+                    text = if (pet.sex == 0) {
+                        "남"
+                    } else {
+                        "여"
+                    },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 10.dp),
