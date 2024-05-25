@@ -8,7 +8,7 @@ import com.dohyun.data.diary.source.DiaryEntity
 import com.dohyun.data.pet.source.PetDao
 import com.dohyun.data.pet.source.PetEntity
 
-@Database(entities = [DiaryEntity::class, PetEntity::class], version = 6)
+@Database(entities = [DiaryEntity::class, PetEntity::class], version = 7)
 @TypeConverters(RoomConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun diaryDao(): DiaryDao
