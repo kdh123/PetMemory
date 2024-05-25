@@ -11,11 +11,11 @@ class PetLocalDataSource @Inject constructor(private val db: AppDatabase) : PetD
     private val petService = db.petDao()
 
     override suspend fun getAllPet(): Flow<List<Pet>> {
-        return petService.getAllPet().map { list -> list?.map { it.toDto() }?.reversed() ?: listOf() }
+        return petService.getAllPet().map { list -> list?.map { it.toPet() }?.reversed() ?: listOf() }
     }
 
     override suspend fun getPetInfo(petId: Int): Pet? {
-        return petService.getPetInfo(petId = petId)?.toDto()
+        return petService.getPetInfo(petId = petId)?.toPet()
     }
 
     override suspend fun savePet(pet: Pet) {

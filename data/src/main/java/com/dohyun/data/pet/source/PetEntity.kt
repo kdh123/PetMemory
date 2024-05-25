@@ -21,7 +21,7 @@ data class PetEntity(
     @ColumnInfo(name = "petSex") val petSex: Int,
     @ColumnInfo(name = "petImageUrl") val petImageUrl: String
 ) {
-    fun toDto() : Pet{
+    fun toPet() : Pet{
         val thisYear = todayDate("yyyy").toInt()
         val birthYear = petBirthDay.substring(0, 4).toInt()
 
@@ -39,7 +39,7 @@ data class PetEntity(
         )
     }
 
-    fun todayDate(pattern: String = "yyyy-MM-dd HH:mm"): String {
+    private fun todayDate(pattern: String = "yyyy-MM-dd HH:mm"): String {
         val date = Date()
         return SimpleDateFormat(pattern, Locale.getDefault()).format(date)
     }

@@ -4,8 +4,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dohyun.domain.diary.Diary
+import com.dohyun.domain.diary.DiaryRepository
 import com.dohyun.domain.diary.SaveDiaryUseCase
-import com.dohyun.domain.diary.EditDiaryUseCase
 import com.dohyun.domain.pet.PetRepository
 import com.dohyun.petmemory.ui.diary.SelectedPet
 import com.dohyun.petmemory.util.DateUtil
@@ -21,8 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DiaryWriteViewModel @Inject constructor(
     private val petRepository: PetRepository,
-    private val saveDiaryUseCase: SaveDiaryUseCase,
-    private val editDiaryUseCase: EditDiaryUseCase
+    private val diaryRepository: DiaryRepository,
+    private val saveDiaryUseCase: SaveDiaryUseCase
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<DiaryWriteUiState> = MutableStateFlow(DiaryWriteUiState())
@@ -127,7 +127,7 @@ class DiaryWriteViewModel @Inject constructor(
             )
 
             if (isEdit) {
-                editDiaryUseCase(diary = diary)
+                diaryRepository.updateDiary(diary = diary)
             } else {
                 saveDiaryUseCase(diary = diary)
             }

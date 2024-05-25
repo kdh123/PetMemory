@@ -16,12 +16,12 @@ class RoomConverter {
     }
 
     @TypeConverter
-    fun petDtoToJson(value: Pet?): String? {
+    fun petToJson(value: Pet?): String? {
         return Gson().toJson(value)
     }
 
     @TypeConverter
-    fun jsonToPetDto(value: String?): Pet? {
+    fun jsonToPet(value: String?): Pet? {
         return if (value != null) {
             Gson().fromJson(value, Pet::class.java)
         } else {

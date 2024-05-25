@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -109,10 +110,25 @@ fun MainScreen() {
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
+
                 items.forEach { screen ->
+                    val isSelected = currentDestination?.hierarchy?.any { it.route == screen.screenRoute } == true
+
                     BottomNavigationItem(
-                        icon = { Icon(painterResource(id = screen.icon), contentDescription = null) },
-                        label = { Text(screen.screenRoute) },
+                        icon = {
+                            if (isSelected) {
+                                Icon(painterResource(id = screen.selected), contentDescription = null, tint = Color.Unspecified)
+                            } else {
+                                Icon(painterResource(id = screen.unSelected), contentDescription = null, tint = Color.Unspecified)
+                            }
+                        },
+                        label = {
+                            if (isSelected) {
+                                Text(screen.screenRoute, color = colorResource(id = R.color.primary))
+                            } else {
+                                Text(screen.screenRoute)
+                            }
+                        },
                         selected = currentDestination?.hierarchy?.any { it.route == screen.screenRoute } == true,
                         onClick = {
                             if (screen.screenRoute == "camera") {
@@ -135,10 +151,10 @@ fun MainScreen() {
 }
 
 sealed class Screen(
-    val title: String, val icon: Int, val screenRoute: String
+    val title: String, val selected: Int, val unSelected: Int, val screenRoute: String
 ) {
-    object Home : Screen("홈", R.drawable.ic_home, "home")
-    object Map : Screen("지도", R.drawable.ic_map, "map")
-    object Camera : Screen("카메라", R.drawable.ic_add, "camera")
-    object Profile : Screen("프로필", R.drawable.ic_profile, "profile")
+    object Home : Screen("홈", R.drawable.ic_home, R.drawable.ic_home_black, "home")
+    object Map : Screen("지도", R.drawable.ic_map_primary, R.drawable.ic_map_black, "map")
+    object Camera : Screen("카메라", R.drawable.ic_add, R.drawable.ic_add_black_15, "camera")
+    object Profile : Screen("프로필", R.drawable.ic_profile_primary, R.drawable.ic_profile_black, "profile")
 }
